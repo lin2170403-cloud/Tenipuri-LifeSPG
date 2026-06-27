@@ -2,7 +2,7 @@
 // · 屬性賦分：可同時對 N 個角色分配積分（招牌 ×1.5），草稿可一鍵還原，保存才扣分。
 // · 技能學習：用技能點學絕招，同樣草稿制。當日點數不必用完。
 import { useState, useMemo } from 'react';
-import { ATTR_GROUP_LIST, ATTR_LABELS, DIFFICULTY, TEAMS } from '../lib/constants.js';
+import { ATTR_GROUP_LIST, ATTR_LABELS, ATTR_KEYS, DIFFICULTY, TEAMS } from '../lib/constants.js';
 import { previewGrids, applyAllocation, skillStatus } from '../lib/engine.js';
 import { useGame } from '../lib/store.jsx';
 
@@ -146,6 +146,7 @@ export default function AllocationCenter() {
 }
 
 function AttrAlloc({ char, charState, draft, onSet }) {
+  const targetStage = char.stages[Math.min(charState.level, 5)];
   return (
     <div>
       {ATTR_GROUP_LIST.map((g) => (
@@ -155,14 +156,16 @@ function AttrAlloc({ char, charState, draft, onSet }) {
             const isSig = char.signatureAttr === key;
             const pts = draft[key] || 0;
             const grids = previewGrids(pts, isSig);
+            const cur = Math.round((charState.attrs[key] || 0) * 10) / 10;
+            const tgt = targetStage[ATTR_KEYS.indexOf(key)];
             return (
               <div className="alloc-row" key={key}>
                 <span className={'a-nm' + (isSig ? ' sig' : '')}>
-                  {ATTR_LABELS[key]}<span className="mini-lab"> · 現在 {Math.round((charState.attrs[key] || 0) * 10) / 10}</span>
+                  {ATTR_LABELS[key]}{isSig ? ' ★' : ''}<span className="mini-lab"> · 現在 {cur} / 目標 {tgt}</span>
                 </span>
+                <span className="a-prev">{grids > 0 ? `+${grids}` : ''}</span>
                 <input type="number" min="0" inputMode="numeric" placeholder="0"
                   value={draft[key] ?? ''} onChange={(e) => onSet(char.id, key, e.target.value)} />
-                <span className="a-prev">{grids > 0 ? `+${grids}` : ''}</span>
               </div>
             );
           })}
