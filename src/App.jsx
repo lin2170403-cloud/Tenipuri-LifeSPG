@@ -30,7 +30,7 @@ export default function App() {
       <Home team={team} setTeam={setTeam} charId={charId} setCharId={setCharId} onOpenSettings={() => setSettingsOpen(true)} />
 
       {settingsOpen && (
-        <Modal title="⚙️ 設定" onClose={() => setSettingsOpen(false)}>
+        <Modal title="⚙️ 設定" full onClose={() => setSettingsOpen(false)}>
           <Settings />
         </Modal>
       )}
