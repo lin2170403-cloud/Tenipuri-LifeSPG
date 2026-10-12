@@ -121,7 +121,7 @@ function crop(kind,imgObj){
  const value=canvas.toDataURL(kind==='stamp'?'image/png':'image/jpeg',.75);
  if(kind==='avatar')conf(api.getState(),chosen).avatar=value;
  else if(draft)draft[kind]=value;
- host.remove();api.save();renderSettings(api.getState());};paint();
+ host.remove();try{api.save();renderSettings(api.getState());}catch(error){api.toast('画像を保存できません。小さい画像を使用してください');}};paint();
 }
 function fileChosen(kind,f){
  if(!f||!f.type.startsWith('image/'))return api.toast('画像ファイルを選んでください');
@@ -131,10 +131,12 @@ function fileChosen(kind,f){
 function bind(context) {
  api=context;migrate(api.getState(),api.chars);
  const root=document.getElementById('cp-settings');
- const file=document.createElement('input');file.type='file';file.accept='image/*';file.hidden=true;root.appendChild(file);
+ const file=document.createElement('input');file.type='file';file.accept='image/*';file.hidden=true;document.body.appendChild(file);
  file.onchange=()=>{const f=file.files[0];file.value='';if(f)fileChosen(uploadKind,f)};
  root.addEventListener('input',ev=>{
- const t=ev.target;if(t.dataset.cpMsg!==undefined)draft.messages[Number(t.dataset.cpMsg)].text=t.value;
+ const t=ev.target;if(t.name==='name'&&draft)draft.name=t.value;
+ if(t.name==='note'&&draft)draft.note=t.value;
+ if(t.dataset.cpMsg!==undefined)draft.messages[Number(t.dataset.cpMsg)].text=t.value;
  if(t.dataset.cpProb!==undefined)draft.messages[Number(t.dataset.cpProb)].chance=Number(t.value);
  });
  root.addEventListener('submit',ev=>{if(ev.target.id!=='cp-editor')return;ev.preventDefault();saveEdit(api.getState(),ev.target);});
