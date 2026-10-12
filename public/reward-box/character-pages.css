@@ -115,3 +115,7 @@
 .cp-crop-modal label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px}
 .cp-crop-modal input{flex:1}
 @media(max-width:370px){.cp-profile{grid-template-columns:36% 1fr;padding:8px}.cp-info h2{font-size:16px}.cp-statrow{grid-template-columns:64px 1fr}.cp-statrow small{font-size:8px}.cp-resources b{font-size:12px}}
+
+.cp-header:not([style]){background:linear-gradient(125deg,#fae7ef,#e1deed);color:#614b72;text-shadow:none}
+.cp-header[style]{color:white;text-shadow:0 2px 8px #292138a8}
+.cp-portraits button:focus-visible,.cp-set-grid button:focus-visible,.cp-tabs button:focus-visible{outline:3px solid #ab8cd9;outline-offset:2px}
