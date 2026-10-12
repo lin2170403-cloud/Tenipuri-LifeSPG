@@ -91,7 +91,7 @@ function bind(api) {
  if(b.hasAttribute('data-cp-open-book')){S().resetMonth();view='book';render();return;}
  if(b.dataset.cpMonth){S().changeMonth(Number(b.dataset.cpMonth));render();return;}
  if(b.hasAttribute('data-cp-stamp')){S().stamp(s,id);return;}
- if(b.dataset.cpFire){S().protect(s,b.dataset.cpFire);return;}
+ if(b.dataset.cpFire){S().protect(s,b.dataset.cpFire,b.dataset.cpSlot);return;}
  if(b.dataset.cpSettings){S().open(b.dataset.cpSettings);return;}
  if(b.dataset.cpAttr){attr=Number(b.dataset.cpAttr);view='attr';render();return;}
  if(b.dataset.cpSkill){A.learn(id,b.dataset.cpSkill);return;}
