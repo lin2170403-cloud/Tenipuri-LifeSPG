@@ -94,6 +94,7 @@ body{padding-bottom:calc(69px + env(safe-area-inset-bottom))}
 @media(max-width:370px){.hk-text small{font-size:9px}.compact-count{padding:4px 7px;font-size:12px}.resource-bottom-row .compact-count b{font-size:13px}}
 input,textarea,select{font-size:16px!important}
 </style><link rel="stylesheet" href="./hokkaido-gacha.css"/>
+<link rel="stylesheet" href="./character-pages.css">
 </head>
 <body><header aria-label="現在の残高" class="slim-header"><button aria-label="メニューを開く" class="top-action" id="menu-open" type="button">☰</button>
 <div class="top-resources">
@@ -101,7 +102,7 @@ input,textarea,select{font-size:16px!important}
 <div class="resource-bottom-row"><button class="compact-count" data-open="gems" title="ジェムを記録">💎 <b id="stat-gems">0</b><span class="bubble-plus">＋</span></button><button class="compact-count" data-open="training" title="ニャンコイン・育成ptを記録">🐱 <b id="stat-coins">0</b><span class="bubble-plus">＋</span></button></div>
 </div></header>
 <main class="app"><div hidden="" id="legacy-stats"><span id="stat-wallet"></span><span id="stat-vouchers"></span><span id="display-date"></span></div><div aria-hidden="true" class="sr-only"><span id="stat-vouchers"></span><span id="display-date"></span></div>
-<section aria-label="12人のキャラ育成" class="section active" id="page-chars"><div class="segment-switch chars-route" role="tablist"><button class="segment-btn active" data-charpage="growth" type="button">育成</button><button class="segment-btn" data-charpage="shop" type="button">ショップ</button><button class="segment-btn" data-charpage="date" type="button">デート</button></div><div class="char-subpane active" data-charpage="growth"><div class="page-head"><div><div class="page-kicker">TRAINING</div><h2>育成</h2></div><span class="page-mark">♧</span></div>
+<section aria-label="12人のキャラ育成" class="section active" id="page-chars"><div id="cp-home"></div><div class="segment-switch chars-route" role="tablist"><button class="segment-btn active" data-charpage="growth" type="button">育成</button><button class="segment-btn" data-charpage="shop" type="button">ショップ</button><button class="segment-btn" data-charpage="date" type="button">デート</button></div><div class="char-subpane active" data-charpage="growth"><div class="page-head"><div><div class="page-kicker">TRAINING</div><h2>育成</h2></div><span class="page-mark">♧</span></div>
 <details class="compact-detail res-detail"><summary>育成pt・ニャンコイン残高 <span class="disclosure-arrow">⌄</span></summary><div class="details-body"><div aria-label="育成資源残高" class="resource-strip" id="resource-strip"></div></div></details><div class="panel"><div class="heading"><div><h2>12人の王子たち</h2><p class="small dim">選んで育成する · 共通資源を自由に配分</p></div><span class="badge" id="clear-count">0/12 完全育成</span></div><div class="charlist" id="char-list"></div><div class="notice" style="margin-top:10px">段階昇格は15属性すべて達成。第6段階＋全スキル習得＋好感度1,500で完全クリア。昇格・スキル習得で好感度が自動上昇。</div></div><div class="panel"><div id="character-detail"></div></div></div><section aria-label="ニャンコインショップ" class="char-subpane" data-charpage="shop" id="page-shop">
 <div class="columns"><div class="panel"><div class="heading"><div><h2>ニャンコインショップ</h2><p class="small dim">贈り物で好感度を上げる</p></div><span class="badge" id="shop-coins">0 🐱</span></div><div class="field"><label for="shop-recipient">贈る相手</label><select class="selector" id="shop-recipient"></select></div><div class="shop-filters" id="shop-filters"><button class="subtab active" data-shop="special" type="button">🎀 スペシャル</button><button class="subtab" data-shop="food" type="button">🍽️ フード</button><button class="subtab" data-shop="fashion" type="button">👔 ファッション</button></div><div class="notice" id="shop-explain"></div></div>
 <div class="panel"><div class="heading"><div><h2 id="shop-heading">スペシャルギフト</h2><p class="small dim" id="shop-subtitle">選択したキャラ専用の商品</p></div><span class="badge" id="shop-item-count">0種</span></div><div class="shop-list" id="shop-items"></div></div></div>
@@ -162,13 +163,15 @@ input,textarea,select{font-size:16px!important}
 </div>
 </div>
 </section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>ガチャ景品図鑑・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p><div id="catalog-list"></div></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
-<div id="content-settings"><div class="panel"><h3>キャラとスタンプ帳</h3><p class="minor">今後のカスタマイズ用ページ。キャラ画像・スタンプ設定を追加予定です。</p></div></div>
+<div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
 <div id="content-stock"><div class="panel"><h3>景品残数</h3><div id="stock-list"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
 <div id="content-morning-history"><div class="panel"><h3>朝くじ履歴</h3><div id="morning-history-list"></div></div></div>
 <div id="content-story-history"><div class="panel"><h3>北海道ミニストーリー履歴</h3><div id="story-history-list"></div></div></div>
 </div><script src="./hokkaido-gacha.js"></script>
+<script src="./character-stamps.js"></script>
+<script src="./character-profiles.js"></script>
 <script>
 (()=>{'use strict';
 const STORAGE='hime-reward-v2', OLD_STORAGE='hime-reward-v1';
@@ -254,6 +257,9 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
   s.jewels=int(raw.jewels)||0;
   s.morningHistory=Array.isArray(raw.morningHistory)?raw.morningHistory:[];
   s.storyHistory=Array.isArray(raw.storyHistory)?raw.storyHistory:[];
+  s.charStamps=raw.charStamps&&typeof raw.charStamps==='object'?raw.charStamps:{};
+  s.itemStock=raw.itemStock&&typeof raw.itemStock==='object'?raw.itemStock:{};
+  s.protectionDays=int(raw.protectionDays)||0;
   s.hokkaidoGacha=raw.hokkaidoGacha||null;
   if(!raw.uiVersion||raw.uiVersion<4){s.dateLocked+=(s.funds.date||0);s.funds.date=0;}
   s.vouchers.forEach((v,i)=>{if(!v.uid)v.uid='legacy-'+i+'-'+String(v.draw||0);if(!Number.isFinite(v.used))v.used=0});
@@ -261,7 +267,7 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
 function readState(){const raw=localStorage.getItem(STORAGE)||localStorage.getItem(OLD_STORAGE);if(!raw)return defaultState();try{return migrate(JSON.parse(raw))}catch(e){alert('記録を読み込めません。既存データは保護されています。\n'+e.message);throw e}}
 let state=readState(),activeTab='chars',selectedChar='niou',shopChar='niou',shopTab='special',attrGroup='physical',fundSign='add',toastTimer=null;
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
-window.HokkaidoGacha.reconcile(state);persist();
+window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);persist();
 function log(kind,title,note=''){state.events.unshift({kind,title,note,at:timestamp()});state.events.length=Math.min(state.events.length,1000)}
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
 let walletView='ledger', intakeView='training', charView='growth',charPage='growth',activeSubpage='',activeSheet='';
@@ -433,7 +439,7 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state)}
+function render(){renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state)}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から（新しく確保したお金）</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
   document.querySelectorAll('[data-walletview]').forEach(b=>b.addEventListener('click',()=>setWalletView(b.dataset.walletview)));document.querySelectorAll('[data-charpage].segment-btn').forEach(b=>b.addEventListener('click',()=>switchCharPage(b.dataset.charpage)));
@@ -466,7 +472,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  $('shop-items').addEventListener('click',e=>{const b=e.target.closest('[data-gift]');if(!b)return;const g=GIFTS.find(x=>x.id===b.dataset.gift),c=CHAR_BY_ID[shopChar];if(!g||g.type==='special'&&g.cid!==shopChar)return;const old=state.gifts[shopChar]||[];if(g.type!=='food'&&old.includes(g.id))return toast('この贈り物はもう渡してあります');if(state.resources.coins<g.price)return toast('ニャンコインが足りません');const val=giftValue(g,shopChar);if(!window.confirm(`${c.name}に「${g.name}」を贈る？\n🐱 ${g.price} → 好感度 +${val}`))return;state.resources.coins-=g.price;if(g.type!=='food'){state.gifts[shopChar]=[...old,g.id]}addAffinity(shopChar,val,`${g.name}（${fmt(g.price)}🐱）`);persist();render();toast(`${c.name} がプレゼントを受け取った ♡`)});
  $('pending-list').addEventListener('click',e=>{const b=e.target.closest('[data-assign]');if(!b)return;const ix=Number(b.dataset.assign),p=state.pending[ix],cid=$('pending-char-'+ix)?.value;if(!p||p.kind!=='assign-affection'||!CHAR_BY_ID[cid])return;addAffinity(cid,p.value,p.why||`ガチャ #${p.draw||'—'}`);state.pending.splice(ix,1);persist();render();toast('好感度を付与したよ ♡')});
  $('export-btn').addEventListener('click',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}));a.href=url;a.download='hime-gacha-training-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),900);toast('バックアップを書き出したよ')});
- $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;state=d;window.HokkaidoGacha.reconcile(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
+ $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
 
  $('ledger-form').addEventListener('submit',e=>{e.preventDefault();const date=$('ledger-date').value,amount=int($('ledger-amount').value),type=$('ledger-type').value,src=$('ledger-source').value,note=$('ledger-note').value.trim();if(!amount||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return toast('日付と金額を確認してね');
  let label=type==='income'?'収入':'出費',source=src,debtAdded=0;
@@ -480,7 +486,35 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  $('exchange-prize').addEventListener('change',()=>{$('exchange-submit').disabled=!(state.exchangeTickets[PRIZES.find(p=>p.id===$('exchange-prize').value)?.rarity]>0)});
  $('exchange-submit').addEventListener('click',()=>{const p=PRIZES.find(x=>x.id===$('exchange-prize').value);if(!p||!['UR','SSR','SR'].includes(p.rarity))return toast('交換対象を選んでね');if(stockRemaining(p)<=0)return toast('品切れです');if(!state.exchangeTickets[p.rarity])return toast('交換券が足りません');if(!window.confirm(`${p.rarity}交換券1枚を「${p.name}」と交換しますか？`))return;state.exchangeTickets[p.rarity]--;if(p.cap)state.vouchers.unshift({uid:'ex-'+Date.now(),prize:p.id,name:p.name,rarity:p.rarity,amount:p.amount,used:0,at:timestamp(),source:'exchange'});else applyGacha(p);log('exchange',`${p.rarity}｜${p.name}`,'交換券1枚を消費');persist();render();toast('景品を持ち物に追加したよ')});
 
- window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
+ const characterApi={
+ state:()=>state,chars:CHARS,ATTR,KEYS,GROUPS,GIFTS,giftValue,toast,log,
+ commit:()=>{persist();render()},save:()=>{persist();render()},
+ openIntake:()=>openSheet('training'),openSettings:()=>openPage('settings'),
+ selectLegacy:(cid)=>{selectedChar=cid;renderCharacters()},addAffinity,
+ invest:(cid,i,amount)=>{
+  const c=CHAR_BY_ID[cid],st=state.characters[cid];
+  const g=GROUPS.find(g=>i>=g[2]&&i<g[3]);if(!g)return toast('属性が見つかりません');
+  const factor=KEYS[i]===c.signature?1.5:1,cap=c.levels[i][5],need=Math.ceil((cap-st.attrs[i])/factor);
+  if(!Number.isSafeInteger(amount)||amount<1||need<=0||amount>need)return toast('投入ptを確認してください');
+  if(state.resources[g[0]]+state.resources.base<amount)return toast('ptが足りません');
+  const own=Math.min(amount,state.resources[g[0]]);
+  state.resources[g[0]]-=own;state.resources.base-=amount-own;
+  st.attrs[i]=Math.min(cap,Math.round((st.attrs[i]+amount*factor)*10)/10);
+  const leveled=recalc(c);
+  log('allocation',c.name+' '+ATTR[i]+' +'+(amount*factor),'pt −'+amount);
+  persist();render();
+  toast(leveled?c.name+' 第'+st.stage+'段階へ昇格！':ATTR[i]+'が成長した ♡');
+ },
+ learn:(cid,sid)=>{selectedChar=cid;charView='skills';renderCharacters();
+  const el=$('character-detail').querySelector('[data-skill="'+sid+'"]');
+  if(el&&!el.disabled)el.click();else toast('習得条件を確認してください')},
+ boost:(cid)=>{selectedChar=cid;charView='growth';renderCharacters();
+  const el=$('character-detail').querySelector('[data-boost]');
+  if(el&&!el.disabled)el.click();else toast('次段階まで育成済みです')}
+};
+window.CharacterStamps.bind({getState:()=>state,chars:CHARS,toast,log,save:characterApi.save,openSettings:characterApi.openSettings});
+window.CharacterProfiles.bind(characterApi);
+window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
 bind();
 })();
 </script></body>
