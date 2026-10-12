@@ -31,7 +31,7 @@ function flames(s,c) {
 }
 function flameHTML(s,c) {
  const n=flames(s,c);
- return `<div class="cp-flame"><b>連続打刻</b><span>${[0,1,2].map(i=>`<button type="button" data-cp-fire="${c}" class="${i<n?'on':'off'}" title="火の保護チケットを使用">${i<n?'🔥':'♨'}</button>`).join('')}</span><small>${n}/3 ${n?'':'デート不可'}</small></div>`;
+ return `<div class="cp-flame"><b>連続打刻</b><span>${[0,1,2].map(i=>`<button type="button" data-cp-fire="${c}" data-cp-slot="${i}" class="${i<n?'on':'off'}" title="火の保護チケットを使用">${i<n?'🔥':'♨'}</button>`).join('')}</span><small>${n}/3 ${n?'':'デート不可'}</small></div>`;
 }
 function calendar(s,c) {
  const b=book(s,c),t=day();
@@ -57,15 +57,19 @@ function stamp(s,c) {
  api.log('stamp',api.chars.find(x=>x.id===c).name+'｜'+b.name,t);
  api.save();api.toast(feedback);
 }
-function protect(s,c) {
- const yesterday=shift(day(),-1),b=book(s,c);if(!b)return api.toast('スタンプ帳を作成してください');
- if(stamps(s,c)[yesterday])return api.toast('昨日の火は守られています');
+function protect(s,c,slot=null) {
+ const b=book(s,c);if(!b)return api.toast('スタンプ帳を作成してください');
+ const n=flames(s,c);
+ if(n>=3||(slot!==null&&Number(slot)<n))return api.toast('その炎はすでに灯っています');
+ const t=day(),marked=stamps(s,c),anchor=marked[t]?t:shift(t,-1);
+ const target=shift(anchor,-n);
+ if(marked[target])return api.toast('この日はすでに記録されています');
  const pending=(s.pending||[]).findIndex(p=>p.kind==='ticket'&&String(p.detail||'').includes('チェックイン救済'));
  if(s.protectionDays===0&&pending<0)return api.toast('火の保護チケットがありません');
- if(!window.confirm('保護チケット1日分を使って昨日の炎を守りますか？'))return;
+ if(!window.confirm(target+' の未打刻を保護しますか？（チケット1日分）'))return;
  if(s.protectionDays===0){s.pending.splice(pending,1);s.protectionDays+=3;}
- s.protectionDays--;b.days[yesterday]={protected:true,time:new Date().toISOString()};
- api.log('stamp','炎を保護',api.chars.find(x=>x.id===c).name+' '+yesterday);api.save();api.toast('🔥 炎を守りました');
+ s.protectionDays--;b.days[target]={protected:true,time:new Date().toISOString()};
+ api.log('stamp','炎を保護',api.chars.find(x=>x.id===c).name+' '+target);api.save();api.toast('🔥 炎を守りました');
 }
 function renderSettings(s){
  const root=document.getElementById('cp-settings');if(!root)return;
