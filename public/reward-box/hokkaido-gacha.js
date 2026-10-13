@@ -212,6 +212,26 @@
     if(draw){draw.disabled=state.jewels<100;draw.textContent='1回 💠100';}
   }
   function hkCount(state,r){return CARDS.filter(c=>c.rarity===r&&state.hokkaidoGacha.collection[c.id]).length;}
+  // Commit the draw and the card inventory before playing any animation.
+  // A skipped animation, page reload, or interrupted network cannot re-roll the result.
+  function performDraw(count,askConfirmation=true){
+    if(count!==1&&count!==10)return;
+    const s=api.getState(),hk=s.hokkaidoGacha,cost=count*PULL_COST;
+    if(s.jewels<cost)return api.toast('北海道ジュエルが足りません');
+    if(askConfirmation&&!window.confirm('北海道ガチャを'+count+'回引きますか？（💠'+cost+'）'))return;
+    s.jewels-=cost;
+    const results=Array.from({length:count},()=>drawOne(s));
+    hk.latest=results.slice().reverse().slice(0,10);
+    api.log('hokkaido','北海道ガチャ '+count+'回','💠 −'+cost);
+    api.persist();
+    api.render();
+    const opening=results.map(r=>({ ...CARD_BY_ID[r.id],duplicate:r.duplicate,draw:r.draw }));
+    if(window.HokkaidoReveal&&typeof window.HokkaidoReveal.play==='function'){
+      window.HokkaidoReveal.play(opening,{repeat:(nextCount)=>performDraw(nextCount,false)});
+    }else{
+      api.toast('北海道の思い出が '+count+'枚増えたよ ✈️');
+    }
+  }
   function bind(context){
     api=context;
     const root=document.getElementById('hkg-root');
@@ -230,14 +250,7 @@
         root.querySelector('.hk-story')?.scrollIntoView({behavior:'smooth',block:'nearest'});return;
       }
       if(b.dataset.hkDraw){
-        const count=Number(b.dataset.hkDraw),cost=count*PULL_COST;
-        if(s.jewels<cost)return api.toast('北海道ジュエルが足りません');
-        if(!window.confirm('北海道ガチャを'+count+'回引きますか？（💠'+cost+'）'))return;
-        s.jewels-=cost;
-        hk.latest=Array.from({length:count},()=>drawOne(s)).slice().reverse().slice(0,10);
-        api.log('hokkaido','北海道ガチャ '+count+'回','💠 −'+cost);
-        api.persist();api.render();
-        api.toast('北海道の思い出が '+count+'枚増えたよ ✈️');return;
+        performDraw(Number(b.dataset.hkDraw));return;
       }
       if(b.dataset.hkExchange!==undefined){
         const card=CARD_BY_ID[document.getElementById('hk-exchange-card')?.value];

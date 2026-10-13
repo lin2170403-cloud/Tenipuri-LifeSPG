@@ -94,6 +94,7 @@ body{padding-bottom:calc(69px + env(safe-area-inset-bottom))}
 @media(max-width:370px){.hk-text small{font-size:9px}.compact-count{padding:4px 7px;font-size:12px}.resource-bottom-row .compact-count b{font-size:13px}}
 input,textarea,select{font-size:16px!important}
 </style><link rel="stylesheet" href="./hokkaido-gacha.css"/>
+<link rel="stylesheet" href="./hokkaido-reveal.css"/>
 <link rel="stylesheet" href="./character-pages.css">
 </head>
 <body><header aria-label="現在の残高" class="slim-header"><button aria-label="メニューを開く" class="top-action" id="menu-open" type="button">☰</button>
@@ -169,7 +170,10 @@ input,textarea,select{font-size:16px!important}
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
 <div id="content-morning-history"><div class="panel"><h3>朝くじ履歴</h3><div id="morning-history-list"></div></div></div>
 <div id="content-story-history"><div class="panel"><h3>北海道ミニストーリー履歴</h3><div id="story-history-list"></div></div></div>
-</div><script src="./hokkaido-gacha.js"></script>
+</div><script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js" async></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" async></script>
+<script src="./hokkaido-reveal.js"></script>
+<script src="./hokkaido-gacha.js"></script>
 <script src="./character-stamps.js"></script>
 <script src="./character-profiles.js"></script>
 <script>
