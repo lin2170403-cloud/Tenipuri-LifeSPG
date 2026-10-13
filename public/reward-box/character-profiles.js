@@ -2,7 +2,7 @@
 const S=()=>window.CharacterStamps;
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const F=v=>Number(v||0).toLocaleString('ja-JP');
-let A=null,id=null,view='detail',tab='skills',goodsTab='special',attr=0;
+let A=null,id=null,view='detail',tab='skills',goodsTab='special',attr=0,peek=null,oldOverflow='';
 const person=()=>A.chars.find(c=>c.id===id);
 const avatar=(s,c)=>S().img(s.charStamps[c]?.avatar,'cp-portrait-img')||'<span>'+E(A.chars.find(x=>x.id===c).name)+'</span>';
 function header(s){
@@ -47,15 +47,8 @@ function gifts(s){
 }
 function detail(s){
  const t=s.characters[id],cap=[150,300,550,900,1200,1500][t.stage-1];
- let pane;
- if(view==='book')pane=S().calendar(s,id);
- else if(view==='attr')pane=points(s);
- else if(view==='shop')pane=shop(s);
- else if(view==='gifts')pane=gifts(s);
- else if(tab==='skills')pane=skillPane();
- else if(tab==='radar')pane=radarPane();
- else pane=`<div class="cp-panel"><h3>💗 デート</h3><p>${S().flames(s,id)?'🔥 デート条件達成':'火がすべて消えているためデート不可'}</p><p class="cp-notice">デート内容は準備中</p></div>`;
- const nav=view==='detail'?`<div class="cp-tabs">${[['skills','スキル'],['radar','レーダー'],['date','デート']].map(([k,n])=>`<button data-cp-tab="${k}" class="${k===tab?'active':''}">${n}</button>`).join('')}</div>`:'<button class="cp-back" data-cp-return>‹ 育成詳細に戻る</button>';
+ const pane=tab==='skills'?skillPane():tab==='radar'?radarPane():
+ `<div class="cp-panel"><h3>💗 デート</h3><p>${S().flames(s,id)?'🔥 デート条件達成':'火がすべて消えているためデート不可'}</p><p class="cp-notice">デート内容は準備中</p></div>`;
  return `<button class="cp-back" data-cp-back>‹ 12人の王子たち</button>
  <div class="cp-profile"><div class="cp-photo">${avatar(s,id)}</div><div class="cp-info"><h2>${E(person().name)}</h2>
  <b>第${t.stage}段階 / 6</b>${S().flameHTML(s,id)}
@@ -63,22 +56,47 @@ function detail(s){
  <div class="cp-heart"><span>💗 好感度</span><b>${F(t.affinity)} / ${cap}</b></div>
  <div class="cp-heartbar"><i style="width:${Math.min(100,100*t.affinity/cap)}%"></i></div>
  <button class="cp-action" data-cp-gift>🎁 プレゼントを贈る</button></div></div>
- ${stat(s)}${nav}${pane}`;
+ ${stat(s)}<div class="cp-tabs">${[['skills','スキル'],['radar','レーダー'],['date','デート']].map(([k,n])=>`<button data-cp-tab="${k}" class="${k===tab?'active':''}">${n}</button>`).join('')}</div>
+ ${pane}`;
 }
-function render() {
+function modalContent(s){
+ if(view==='book')return S().calendar(s,id);
+ if(view==='attr')return points(s);
+ if(view==='shop')return shop(s);
+ if(view==='gifts')return gifts(s);
+ return '';
+}
+function closeModal(){view='detail';render();}
+function modalRender(s){
+ if(!peek)return;
+ const open=Boolean(id&&view!=='detail');
+ if(!open){peek.innerHTML='';peek.classList.remove('open');peek.setAttribute('aria-hidden','true');document.body.style.overflow=oldOverflow;return;}
+ if(!peek.classList.contains('open'))oldOverflow=document.body.style.overflow;
+ peek.innerHTML=`<div class="cp-peek-scrim" data-cp-peek-close></div>
+ <div class="cp-peek-dialog" role="dialog" aria-modal="true" aria-label="${{shop:'ショップ',book:'打刻帳',gifts:'プレゼント',attr:'ポイント投入'}[view]||'キャラ操作'}">
+ <div class="cp-peek-top"><b>${E(person().name)} · ${{shop:'ショップ',book:'打刻帳',gifts:'プレゼント',attr:'ポイント投入'}[view]||'キャラ操作'}</b>
+ <button type="button" aria-label="閉じる" data-cp-peek-close>×</button></div>
+ <div class="cp-peek-scroll">${modalContent(s)}</div></div>`;
+ peek.classList.add('open');peek.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+}function render() {
  if(!A)return;
  const s=A.state();S().migrate(s,A.chars);
- document.getElementById('cp-home').innerHTML=header(s)+(id?detail(s):lobby(s));
+ document.getElementById('cp-home').innerHTML=header(s)+(id?detail(s):lobby(s));modalRender(s);
 }
 function bind(api) {
  A=api;const root=document.getElementById('cp-home');
- root.addEventListener('submit',ev=>{
+ peek=document.createElement('div');peek.id='cp-peek-overlay';peek.className='cp-peek-overlay';peek.setAttribute('aria-hidden','true');document.body.appendChild(peek);
+ peek.addEventListener('click',event=>{if(event.target.closest('[data-cp-peek-close]'))closeModal()});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&peek.classList.contains('open')){event.stopPropagation();closeModal();}});
+
+ const onSubmit=ev=>{
  if(ev.target.id!=='cp-invest')return;
  ev.preventDefault();const n=Number(new FormData(ev.target).get('amount'));
  if(!Number.isSafeInteger(n)||n<1)return A.toast('投入ptは1以上の整数にしてね');
- A.invest(id,attr,n);view='detail';
- });
- root.addEventListener('click',ev=>{
+ view='detail';A.invest(id,attr,n);render();
+ };
+ root.addEventListener('submit',onSubmit);peek.addEventListener('submit',onSubmit);
+ const onClick=ev=>{
  const b=ev.target.closest('button');if(!b)return;
  const s=A.state();
  if(b.hasAttribute('data-cp-intake')){A.openIntake();return;}
@@ -92,7 +110,7 @@ function bind(api) {
  if(b.dataset.cpMonth){S().changeMonth(Number(b.dataset.cpMonth));render();return;}
  if(b.hasAttribute('data-cp-stamp')){S().stamp(s,id);return;}
  if(b.dataset.cpFire){S().protect(s,b.dataset.cpFire,b.dataset.cpSlot);return;}
- if(b.dataset.cpSettings){S().open(b.dataset.cpSettings);return;}
+ if(b.dataset.cpSettings){view='detail';render();S().open(b.dataset.cpSettings);return;}
  if(b.dataset.cpAttr){attr=Number(b.dataset.cpAttr);view='attr';render();return;}
  if(b.dataset.cpSkill){A.learn(id,b.dataset.cpSkill);return;}
  if(b.hasAttribute('data-cp-boost')){A.boost(id);return;}
@@ -114,7 +132,8 @@ function bind(api) {
   if(g.type!=='food')s.gifts[id]=[...(s.gifts[id]||[]),g.id];
   A.addAffinity(id,val,'ギフト '+g.name);A.commit();A.toast('プレゼントを贈りました ♡');
  }
- });
+ };
+ root.addEventListener('click',onClick);peek.addEventListener('click',onClick);
  render();
 }
 window.CharacterProfiles={bind,render};
