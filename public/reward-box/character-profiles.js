@@ -70,7 +70,7 @@ function closeModal(){view='detail';render();}
 function modalRender(s){
  if(!peek)return;
  const open=Boolean(id&&view!=='detail');
- if(!open){peek.innerHTML='';peek.classList.remove('open');peek.setAttribute('aria-hidden','true');document.body.style.overflow=oldOverflow;return;}
+ if(!open){const wasOpen=peek.classList.contains('open');peek.innerHTML='';peek.classList.remove('open');peek.setAttribute('aria-hidden','true');if(wasOpen)document.body.style.overflow=oldOverflow;return;}
  if(!peek.classList.contains('open'))oldOverflow=document.body.style.overflow;
  peek.innerHTML=`<div class="cp-peek-scrim" data-cp-peek-close></div>
  <div class="cp-peek-dialog" role="dialog" aria-modal="true" aria-label="${{shop:'ショップ',book:'打刻帳',gifts:'プレゼント',attr:'ポイント投入'}[view]||'キャラ操作'}">
