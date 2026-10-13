@@ -184,7 +184,7 @@
         const allowed=!owned&&cost!==undefined&&cost!==null&&balance>=cost;
         return `<div class="hk-catalog-item">
           <button type="button" class="hk-card-button" data-hk-story="${c.id}" ${owned?'':'disabled'}>${imageCard(c,owned)}
-          <small>所持 ${hk.collection[c.id]||0}枚 · ${owned?'取得済':'未所持'}</small></button>
+          <small>所持 ${hk.collection[c.id]||0}枚 · 残り 無制限</small></button>
           ${!owned&&cost!==undefined&&cost!==null?`<button type="button" class="btn secondary hk-redeem-button" data-hk-exchange="${c.id}" ${allowed?'':'disabled'}>交換 ${exchangeMode==='medals'?'🪙'+cost:'🎟️1枚'}</button>`:`<small class="hk-unavailable">${owned?'取得済み':'交換不可'}</small>`}
         </div>`;
       }).join('')}</div>
