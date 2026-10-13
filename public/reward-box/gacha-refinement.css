@@ -1,0 +1,43 @@
+/* Shared gacha structure: three tabs, two actions, no duplicate latest-results panel. */
+#page-gacha .gacha-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px;margin:12px 0 16px}
+#page-gacha .gacha-switch .segment-btn{min-width:0;font-size:clamp(10px,2.65vw,13px);line-height:1.3;padding:11px 4px;white-space:nowrap}
+#page-gacha .gacha-pane{display:none}
+#page-gacha .gacha-pane.active{display:block}
+#page-gacha .gacha-actions{margin:15px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#page-gacha .gacha-actions .ghost-link{border-radius:12px;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+#page-gacha .gacha-card{padding-bottom:15px}
+#page-gacha #hkg-root .gacha-actions{margin-bottom:1px}
+#content-exchange .resource-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 16px}
+#content-exchange .resource-chip{min-width:0;padding:10px 4px;text-align:center}
+#content-exchange .resource-chip .lab{font-size:11px}
+#content-exchange .resource-chip .amt{font-size:17px;font-weight:900}
+#content-exchange .gacha-stock-group{margin-top:18px}
+#content-exchange .gacha-stock-group h3{margin-bottom:5px;display:flex;align-items:center;gap:9px}
+#content-exchange .gacha-stock-group h3 small{font-size:11px;font-weight:600;color:#918899}
+#content-exchange .gacha-prize-row{gap:10px;min-height:64px}
+#content-exchange .gacha-prize-desc{min-width:0;flex:1;overflow-wrap:anywhere}
+#content-exchange .gacha-prize-desc strong{display:block}
+#content-exchange .gacha-prize-desc small{display:block;font-size:11px;line-height:1.55}
+#content-exchange .gacha-redeem{flex:none;min-width:78px;min-height:38px;padding:9px 7px;font-size:11px}
+#content-exchange .gacha-redeem:disabled{opacity:.48;cursor:default}
+#content-hk-exchange #hkg-exchange-root{width:100%}
+#content-hk-exchange .hk-exchange-assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 17px}
+#content-hk-exchange .hk-asset{background:#f5f2f9;border:1px solid #e9e3f0;border-radius:11px;padding:11px;text-align:center}
+#content-hk-exchange .hk-asset small{display:block;font-size:11px;color:#7c7588}
+#content-hk-exchange .hk-asset b{display:block;font-size:18px;margin-top:4px}
+#content-hk-exchange .hk-exchange-controls{display:block}
+#content-hk-exchange .hk-exchange-controls label{display:block;width:100%;font-size:12px}
+#content-hk-exchange .hk-exchange-controls select{width:100%;min-height:42px;font-size:14px}
+#content-hk-exchange .hk-catalog{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#content-hk-exchange .hk-catalog-item{min-width:0;display:flex;flex-direction:column;gap:5px}
+#content-hk-exchange .hk-catalog-item .hk-card-button{display:block;width:100%;flex:1}
+#content-hk-exchange .hk-catalog-item .hk-card-button small{font-size:9px;line-height:1.25}
+#content-hk-exchange .hk-redeem-button{width:100%;font-size:10px;padding:7px 1px;min-height:34px;border-radius:8px;white-space:nowrap}
+#content-hk-exchange .hk-unavailable{display:block;text-align:center;padding:8px 1px;font-size:10px;color:#898296;min-height:34px}
+#content-hk-exchange .hk-section-title{margin-top:19px}
+#content-hk-exchange .hk-milestones{margin-top:10px}
+#content-hk-exchange .hk-story{margin-top:15px}
+@media(max-width:380px){#page-gacha .gacha-switch .segment-btn{font-size:10px}
+ #content-hk-exchange .hk-catalog{gap:5px}
+ #content-hk-exchange .hk-redeem-button{font-size:9px}
+ #content-exchange .gacha-redeem{min-width:72px}}
