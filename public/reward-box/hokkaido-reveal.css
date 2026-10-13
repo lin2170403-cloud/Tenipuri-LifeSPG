@@ -1,0 +1,88 @@
+/* Hokkaido gacha: compact card-reveal overlay. UI-only; game results are persisted before playback. */
+.hkrev-overlay{position:fixed;inset:0;z-index:120000;display:flex;align-items:center;justify-content:center;
+padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+background:rgba(17,24,49,.84);overflow-y:auto;overscroll-behavior:contain}
+.hkrev-backdrop{position:fixed;inset:0;pointer-events:none;overflow:hidden;
+background:radial-gradient(circle at 18% 10%,#765b966b,transparent 40%),radial-gradient(circle at 90% 75%,#3f85bc62,transparent 39%),
+linear-gradient(140deg,#101a37,#20223b 50%,#263557)}
+.hkrev-backdrop span{position:absolute;font-size:clamp(28px,7vw,55px);color:#e9eafb5c;animation:hkrev-floating 7s ease-in-out infinite alternate}
+.hkrev-backdrop span:nth-child(1){top:10%;left:7%}
+.hkrev-backdrop span:nth-child(2){top:23%;right:12%;animation-delay:-3s}
+.hkrev-backdrop span:nth-child(3){bottom:21%;left:17%;animation-delay:-1s}
+.hkrev-backdrop span:nth-child(4){bottom:12%;right:7%;animation-delay:-5s}
+.hkrev-dialog{position:relative;width:min(100%,570px);max-height:calc(100dvh - 36px);overflow:auto;
+background:linear-gradient(165deg,#fcfaff,#e8ecfb 78%,#e1eefa);color:#2b2847;
+box-shadow:0 12px 60px #050a203b;border:1px solid #ffffffca;border-radius:19px;padding:16px 14px 14px;
+-webkit-overflow-scrolling:touch}
+.hkrev-head{text-align:center}
+.hkrev-kicker{font-size:9px;letter-spacing:.24em;color:#8b7daf;font-weight:800}
+.hkrev-head h2{font-size:clamp(19px,5vw,25px);line-height:1.15;margin:5px 0}
+.hkrev-head p{margin:4px 0 12px;font-size:12px;min-height:18px;color:#79658c;font-weight:650}
+.hkrev-board{display:grid;gap:8px;justify-content:center;align-items:center;margin:0 auto 12px}
+.hkrev-ten{grid-template-columns:repeat(5,minmax(0,1fr));max-width:520px}
+.hkrev-single{grid-template-columns:minmax(0,190px);padding:5px 0}
+.hkrev-card-wrap{border:0;background:transparent;padding:0;aspect-ratio:2/3;min-width:0;perspective:850px;cursor:pointer;
+opacity:1;filter:drop-shadow(0 2px 3px #21194e2a);font-family:inherit}
+.hkrev-card-wrap:focus-visible{outline:2px solid #9567d9;outline-offset:3px;border-radius:9px}
+.hkrev-flipper{position:relative;display:block;width:100%;height:100%;transition:transform .34s cubic-bezier(.24,.69,.33,1.06);transform-style:preserve-3d;border-radius:11px}
+.hkrev-card-wrap.is-revealed .hkrev-flipper{transform:rotateY(180deg)}
+.hkrev-face{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;
+border-radius:10px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-sizing:border-box;
+border:2px solid #fff7;box-shadow:inset 0 0 0 1px #fff3,0 2px 9px #241f4a12}
+.hkrev-back{background:linear-gradient(135deg,#6e71b1,#9aa7d5 52%,#5b719f);color:#fff}
+.hkrev-back:before{position:absolute;content:"";inset:5%;border:1px solid #fffa;border-radius:6px}
+.hkrev-back .hkrev-snow{font-size:clamp(19px,4.5vw,38px);line-height:1.4;text-shadow:0 0 12px #fff}
+.hkrev-back b{font-size:clamp(6px,1.4vw,10px);letter-spacing:.07em}
+.hkrev-back small{font-size:12px;opacity:.85}
+.hkrev-front{transform:rotateY(180deg);justify-content:flex-start;padding:5px 3px;gap:2px;
+background:linear-gradient(150deg,#fafbff,#e6edf7 70%,#fff)}
+.hkrev-icon{display:grid;place-items:center;flex:1;font-size:clamp(24px,5vw,42px);line-height:1.1}
+.hkrev-rank{font-size:clamp(10px,2.1vw,14px);font-weight:950;letter-spacing:.06em;color:#554d70}
+.hkrev-name{font-size:clamp(9px,2vw,12px);font-weight:900;line-height:1.15;overflow-wrap:anywhere}
+.hkrev-title{font-size:clamp(7px,1.45vw,10px);color:#746c87;line-height:1.2;max-width:100%;
+display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hkrev-new,.hkrev-duplicate{font-size:clamp(7px,1.4vw,10px);color:#b65c7d;font-weight:900;line-height:1.2}
+.hkrev-duplicate{color:#8b8496}
+.hkrev-SSR .hkrev-front{background:linear-gradient(145deg,#fff3c7,#ffdc88 47%,#fff9e0);border-color:#f4c65b}
+.hkrev-UR .hkrev-front{background:linear-gradient(145deg,#fce1f5,#cbadef 65%,#fff4fa);border-color:#b98aed}
+.hkrev-MR .hkrev-front{background:linear-gradient(145deg,#ffe1eb,#f4d3a2 43%,#d1baff 100%);border-color:#f4d379}
+.hkrev-card-wrap.is-rare{filter:drop-shadow(0 0 8px #e5b8609e)}
+.hkrev-UR.is-rare{filter:drop-shadow(0 0 9px #b786fba6)}
+.hkrev-MR.is-rare{filter:drop-shadow(0 0 12px #f5ba7ee0)}
+.hkrev-single .hkrev-face{padding:12px;gap:7px}
+.hkrev-single .hkrev-back b{font-size:13px}
+.hkrev-single .hkrev-rank{font-size:20px}
+.hkrev-single .hkrev-icon{font-size:66px}
+.hkrev-single .hkrev-name{font-size:19px}
+.hkrev-single .hkrev-title{font-size:13px}
+.hkrev-single .hkrev-new,.hkrev-single .hkrev-duplicate{font-size:13px}
+.hkrev-status{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#756e82;margin:4px 1px 11px}
+.hkrev-status #hkrev-best{max-width:65%;text-align:right}
+.hkrev-actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+.hkrev-actions .hkrev-button{flex:1;min-width:100px;border:1px solid #aaa2be;border-radius:30px;
+font-size:13px;font-weight:850;min-height:43px;padding:9px 11px;font-family:inherit}
+.hkrev-actions .hkrev-primary{background:#7250a7;color:#fff;border-color:#7250a7}
+.hkrev-actions .hkrev-secondary{background:#fff;color:#67548a}
+.hkrev-actions .hkrev-quiet{background:transparent;color:#716987}
+.hkrev-actions button[hidden]{display:none!important}
+@keyframes hkrev-floating{0%{transform:translate3d(0,0,0) rotate(0)}100%{transform:translate3d(12px,24px,0) rotate(15deg)}}
+@media(max-width:430px){
+ .hkrev-dialog{padding:14px 9px 11px}
+ .hkrev-ten{gap:5px}
+ .hkrev-card-wrap{aspect-ratio:1.9/3}
+ .hkrev-front{padding:3px 2px;gap:1px;border-width:1px}
+ .hkrev-back{border-width:1px}
+ .hkrev-status{font-size:10px}
+ .hkrev-actions .hkrev-button{font-size:12px;min-width:95px}
+}
+@media(max-height:690px){
+ .hkrev-dialog{max-height:95dvh}
+ .hkrev-board{margin-bottom:6px}
+ .hkrev-head p{margin-bottom:7px}
+ .hkrev-single{grid-template-columns:minmax(0,140px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .hkrev-backdrop span{animation:none}
+ .hkrev-flipper{transition:none}
+ .hkrev-card-wrap{animation:none!important}
+}
