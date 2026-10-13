@@ -94,7 +94,8 @@ function revealAt(i){
    if(!s.celebrated.has(i)){
      s.celebrated.add(i);
      const delay=c.rarity==='MR'?330:190;
-     s.timers.push(setTimeout(()=>{if(session===s)burst(c.rarity)},delay));
+     if(s.opened.size===s.results.length)burst(c.rarity);
+     else s.timers.push(setTimeout(()=>{if(session===s)burst(c.rarity)},delay));
    }
  }
  const progress=layer.querySelector('#hkrev-progress');
