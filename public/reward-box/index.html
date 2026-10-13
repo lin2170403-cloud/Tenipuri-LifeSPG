@@ -95,6 +95,7 @@ body{padding-bottom:calc(69px + env(safe-area-inset-bottom))}
 input,textarea,select{font-size:16px!important}
 </style><link rel="stylesheet" href="./hokkaido-gacha.css"/>
 <link rel="stylesheet" href="./hokkaido-reveal.css"/>
+<link rel="stylesheet" href="./gacha-refinement.css"/>
 <link rel="stylesheet" href="./character-pages.css">
 </head>
 <body><header aria-label="現在の残高" class="slim-header"><button aria-label="メニューを開く" class="top-action" id="menu-open" type="button">☰</button>
@@ -480,7 +481,8 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
   document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.jump==='saving')openSheet('saving');else selectTab(b.dataset.jump)}));
  document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openSheet(b.dataset.open)));document.querySelectorAll('[data-info]').forEach(b=>b.addEventListener('click',()=>toast('北海道貯金10円＝1💠、100💠で1回引けます')));
  document.querySelectorAll('[data-gacha-tab]').forEach(b=>b.addEventListener('click',()=>switchGachaPage(b.dataset.gachaTab)));
- document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));$('drawer-back').addEventListener('click',closePage);
+ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
+ $('hkg-root').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)openPage(b.dataset.page)});$('drawer-back').addEventListener('click',closePage);
  document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));
  $('ledger-type').addEventListener('change',renderLedgerExtra);$('ledger-source').addEventListener('change',renderLedgerExtra);$('ledger-date').addEventListener('change',renderLedgerExtra);
   $('menu-open').addEventListener('click',()=>openDrawer('menu-drawer'));
