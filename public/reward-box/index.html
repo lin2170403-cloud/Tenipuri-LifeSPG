@@ -95,6 +95,7 @@ body{padding-bottom:calc(69px + env(safe-area-inset-bottom))}
 input,textarea,select{font-size:16px!important}
 </style><link rel="stylesheet" href="./hokkaido-gacha.css"/>
 <link rel="stylesheet" href="./hokkaido-reveal.css"/>
+<link rel="stylesheet" href="./gacha-refinement.css"/>
 <link rel="stylesheet" href="./character-pages.css">
 </head>
 <body><header aria-label="現在の残高" class="slim-header"><button aria-label="メニューを開く" class="top-action" id="menu-open" type="button">☰</button>
@@ -108,12 +109,17 @@ input,textarea,select{font-size:16px!important}
 <div class="columns"><div class="panel"><div class="heading"><div><h2>ニャンコインショップ</h2><p class="small dim">贈り物で好感度を上げる</p></div><span class="badge" id="shop-coins">0 🐱</span></div><div class="field"><label for="shop-recipient">贈る相手</label><select class="selector" id="shop-recipient"></select></div><div class="shop-filters" id="shop-filters"><button class="subtab active" data-shop="special" type="button">🎀 スペシャル</button><button class="subtab" data-shop="food" type="button">🍽️ フード</button><button class="subtab" data-shop="fashion" type="button">👔 ファッション</button></div><div class="notice" id="shop-explain"></div></div>
 <div class="panel"><div class="heading"><div><h2 id="shop-heading">スペシャルギフト</h2><p class="small dim" id="shop-subtitle">選択したキャラ専用の商品</p></div><span class="badge" id="shop-item-count">0種</span></div><div class="shop-list" id="shop-items"></div></div></div>
 </section><div class="char-subpane" data-charpage="date"><div class="panel"><div class="heading"><h2>デート</h2><span class="badge">準備中</span></div><p class="minor">デート資金はお財布でロック確保できます。デート企画・必要条件・専用ストーリーは次回実装します。</p><button class="btn secondary" data-tab="wallet" type="button">デート資金を確認する</button></div></div></section><section aria-label="ガチャ" class="section" id="page-gacha"><div class="page-head"><h2>ガチャ</h2><span class="page-mark">✦</span></div>
-<div class="panel gacha-card"><div class="heading"><h2>💎 ごほうびガチャ</h2><span class="badge"><span id="draw-count">0</span>回</span></div><div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
-<div class="gacha-actions"><button class="ghost-link" data-page="stock" type="button">景品残数</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div>
-<div class="panel results" id="result-panel"><div class="heading"><h2>最新の結果</h2><span class="badge" id="result-count">まだありません</span></div><div class="result-grid" id="result-area"></div></div></div>
-<div class="panel"><div class="heading"><h2>🎟️ 交換券</h2><span class="badge">UR / SSR / SR</span></div><div class="resource-strip" id="exchange-counts"></div><div class="field"><label for="exchange-prize">交換する景品</label><select id="exchange-prize"></select></div><button class="btn secondary" id="exchange-submit" style="width:100%;margin-top:9px" type="button">交換する</button><p class="minor">交換券の獲得方法は未設定。景品の残数が0なら交換できません。</p></div>
-<div class="panel"><div class="heading"><h2>🌅 朝の運試しくじ</h2><span class="badge">9:00前 · 1日1回</span></div><p class="minor" id="morning-status">景品内容の設定待ち</p><button class="btn secondary" disabled="" id="morning-luck" type="button">景品設定後に開放</button><button class="ghost-link" data-page="morning-history" type="button">履歴</button></div>
-<div class="panel" id="hkg-root" aria-label="北海道貯金ガチャ"></div><button class="ghost-link" data-page="story-history" type="button">北海道カード獲得履歴</button></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
+<div class="segment-switch gacha-switch" role="tablist" aria-label="ガチャ選択">
+<button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="morning">朝の運試し</button>
+<button type="button" class="segment-btn active" role="tab" aria-selected="true" data-gacha-tab="reward">姫猫ご褒美</button>
+<button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="hokkaido">北海道ロマン</button></div>
+<div class="gacha-pane" data-gacha-pane="morning"><div class="panel gacha-card"><div class="heading"><h2>🌅 朝の運試し</h2><span class="badge">9:00前・1日1回</span></div>
+<p class="minor" id="morning-status">景品内容の設定待ち</p><button class="btn secondary" disabled id="morning-luck" type="button">景品設定後に開放</button>
+<div class="gacha-actions"><button class="ghost-link" data-page="morning-exchange" type="button">引換所</button><button class="ghost-link" data-page="morning-history" type="button">抽選履歴</button></div></div></div>
+<div class="gacha-pane active" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
+<div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
+<div class="gacha-actions"><button class="ghost-link" data-page="exchange" type="button">引換所</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div></div></div>
+<div class="gacha-pane" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
 <div class="segment-switch wallet-switch"><button class="segment-btn active" data-walletview="ledger" type="button">帳簿</button><button class="segment-btn" data-walletview="funds" type="button">ファンド</button></div>
 <div class="wallet-subpane active" id="wallet-ledger">
 <div class="panel"><div class="heading"><h2>収入・出費を記帳</h2><span class="badge">現金の記録</span></div>
@@ -163,10 +169,16 @@ input,textarea,select{font-size:16px!important}
 <p class="minor" style="margin-top:11px">「予算外から」は別のお金を実際に取り分けたときに選択。ファンドから移す場合は、ここで同時にそのファンドから差し引きます。</p>
 </div>
 </div>
-</section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>ガチャ景品図鑑・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p><div id="catalog-list"></div></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
+</section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
+<div class="panel"><h3>🐱 姫猫ご褒美：ルール</h3><p class="minor">単発150💎・10連＋1回1,500💎。提供割合は直近の抽選履歴・景品残数と救済条件などで変化します。上記の提供割合と景品一覧を確認してください。</p></div>
+<div class="panel"><h3>✈️ 北海道ロマン：提供割合・ルール</h3>
+<div class="manual-grid"><span>MR</span><b>0.6%</b><span>UR</span><b>3.4%</b><span>SSR</span><b>11%</b><span>SR</span><b>25%</b><span>R</span><b>30%</b><span>N</span><b>30%</b></div>
+<p class="minor">全132種類の単一ガチャ。北海道貯金10円につき北海道ジュエル1個、100個で1回、1,000個で10連。貯金した現金は減りません。</p>
+<p class="minor">SSR以上が10回連続で出なければ10回目にSSR以上、UR以上が40回連続で出なければ40回目にUR以上確定。単発・10連共通、各レア内でカードを均等抽選します。</p>
+<p class="minor">15万円貯金達成で鳳長太郎MR確定。重複カードから交換メダルを獲得できます。選択券・メダルは北海道の「引換所」で使用します。MRは交換対象外です。</p></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
 <div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
-<div id="content-stock"><div class="panel"><h3>景品残数</h3><div id="stock-list"></div></div></div>
+<div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><p class="minor">同じレアリティの交換券で景品を交換します。交換できない景品も図鑑で確認できます。</p><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>🌅 朝の運試し・引換所</h3><p class="minor">このガチャは景品が未設定です。景品を決めたら図鑑と引換所を追加します。</p></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
 <div id="content-morning-history"><div class="panel"><h3>朝くじ履歴</h3><div id="morning-history-list"></div></div></div>
 <div id="content-story-history"><div class="panel"><h3>北海道ミニストーリー履歴</h3><div id="story-history-list"></div></div></div>
@@ -279,12 +291,19 @@ function selectTab(id){if(id==='shop'){id='chars';charPage='shop'}
  activeTab=id;document.querySelectorAll('.bottom-tabs [data-tab]').forEach(t=>{const ok=t.dataset.tab===id;t.classList.toggle('active',ok);t.setAttribute('aria-selected',String(ok))});
  document.querySelectorAll('.app > .section').forEach(s=>s.classList.toggle('active',s.id==='page-'+id));
  switchCharPage(charPage);render();window.scrollTo(0,0)}
-function switchCharPage(page){charPage=page;document.querySelectorAll('[data-charpage].segment-btn').forEach(x=>x.classList.toggle('active',x.dataset.charpage===page));document.querySelectorAll('.char-subpane').forEach(x=>x.classList.toggle('active',x.dataset.charpage===page))}
+function switchGachaPage(id){
+ if(!['morning','reward','hokkaido'].includes(id))return;
+ document.querySelectorAll('[data-gacha-tab]').forEach(b=>{
+  const yes=b.dataset.gachaTab===id;
+  b.classList.toggle('active',yes);b.setAttribute('aria-selected',String(yes));b.tabIndex=yes?0:-1;
+ });
+ document.querySelectorAll('[data-gacha-pane]').forEach(p=>p.classList.toggle('active',p.dataset.gachaPane===id));
+}function switchCharPage(page){charPage=page;document.querySelectorAll('[data-charpage].segment-btn').forEach(x=>x.classList.toggle('active',x.dataset.charpage===page));document.querySelectorAll('.char-subpane').forEach(x=>x.classList.toggle('active',x.dataset.charpage===page))}
 function setWalletView(view){walletView=view;document.querySelectorAll('[data-walletview]').forEach(x=>x.classList.toggle('active',x.dataset.walletview===view));document.querySelectorAll('.wallet-subpane').forEach(x=>x.classList.toggle('active',x.id==='wallet-'+view));render()}
 function setIntakeView(view){intakeView=view;document.querySelectorAll('[data-intake]').forEach(x=>x.classList.toggle('active',x.dataset.intake===view));document.querySelectorAll('.intake-view').forEach(x=>x.classList.toggle('active',x.id==='intake-'+view))}
 function openDrawer(id){closeDrawers();document.getElementById(id).classList.add('open');document.getElementById(id).setAttribute('aria-hidden','false');$('drawer-backdrop').hidden=false;document.body.style.overflow='hidden'}
 function closeDrawers(){document.querySelectorAll('.side-drawer').forEach(x=>{x.classList.remove('open');x.setAttribute('aria-hidden','true')});$('drawer-backdrop').hidden=true;document.body.style.overflow=''}
-const TITLES={inventory:'持ち物',manual:'使い方・説明書',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',stock:'景品残数','gacha-history':'ガチャ履歴','morning-history':'朝くじ履歴','story-history':'北海道ストーリー履歴'};
+const TITLES={inventory:'持ち物',manual:'使い方・説明書',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',exchange:'姫猫ご褒美・引換所','morning-exchange':'朝の運試し・引換所','hk-exchange':'北海道ロマン・引換所','gacha-history':'ガチャ履歴','morning-history':'朝くじ履歴','story-history':'北海道ストーリー履歴'};
 function openPage(id){if(!TITLES[id])return;closeDrawers();activeSubpage=id;$('drawer-page-title').textContent=TITLES[id];const container=$('drawer-page-content'),section=$('content-'+id);container.replaceChildren(section);$('drawer-page').classList.add('open');$('drawer-page').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';render()}
 function closePage(){if(!activeSubpage)return;const el=$('content-'+activeSubpage);if(el)$('subpage-repository').appendChild(el);activeSubpage='';$('drawer-page').classList.remove('open');$('drawer-page').setAttribute('aria-hidden','true');document.body.style.overflow=''}
 function openSheet(id){if(id==='gems'||id==='training'){id='intake';setIntakeView(arguments[0]==='gems'?'gems':'training')}
@@ -328,7 +347,7 @@ function doDraw(){const rar=weighted(probabilities(),x=>x.prob).rarity,p=weighte
   if(wasOwned){const a={UR:70,SSR:50,SR:30,R:10};if(rar==='MR'){addAllAffinity(10,'MR重複');outcome+=' ＋ 全員好感度 +10'}else{const c=CHARS[Math.floor(Math.random()*12)];addAffinity(c.id,a[rar],`${rar}出費景品の重複`);outcome+=` ＋ ${c.name}好感度 +${a[rar]}`}}
  }else{outcome=applyGacha(p)}
  const result={name:p.name,id:p.id,rarity:rar,outcome,draw:state.draws};log('gacha',`${rar}｜${p.name}`,outcome);return result}
-function pull(count,cost){if(state.gems<cost)return toast('ジェムが足りません 🐾');if(!window.confirm(`${count}回ガチャを回しますか？（💎${cost}）`))return;state.gems-=cost;const res=[];for(let i=0;i<count;i++)res.push(doDraw());state.latest=res.slice().reverse();persist();render();$('result-panel').scrollIntoView({block:'nearest',behavior:'smooth'});toast(`${count}回分のガチャ結果を反映したよ ♡`)}
+function pull(count,cost){if(state.gems<cost)return toast('ジェムが足りません 🐾');if(!window.confirm(`${count}回ガチャを回しますか？（💎${cost}）`))return;state.gems-=cost;const res=[];for(let i=0;i<count;i++)res.push(doDraw());state.latest=res.slice().reverse();persist();render();toast(`${count}回分の結果は抽選履歴から確認できるよ ♡`)}
 function trainSum(){return Object.entries(state.resources).filter(([k])=>k!=='coins').reduce((a,[k,v])=>a+v,0)}
 function radar(c,start,end){const s=state.characters[c.id],cx=67,cy=63,r=37,N=5;const polar=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/N;return [cx+r*v*Math.cos(a),cy+r*v*Math.sin(a)]};const poly=vals=>vals.map((v,i)=>polar(i,v).map(a=>a.toFixed(1)).join(',')).join(' ');let out='';for(const ring of [.25,.5,.75,1])out+=`<polygon points="${poly(Array(5).fill(ring))}" fill="none" stroke="#e1dbe9" stroke-width=".8"/>`;
  out+='<polygon points="'+poly(Array.from({length:5},(_,i)=>Math.min(1,c.levels[start+i][s.stage-1]/Math.max(1,c.levels[start+i][5]))))+'" fill="none" stroke="#b5a2d4" stroke-dasharray="3,2" stroke-width="1.6"/>';
@@ -353,24 +372,35 @@ function renderFinance(){const d=today();$('living-status').textContent=`${money
  $('date-reserve').textContent=money(state.dateLocked);$('saving-inline').textContent=money(state.savings);
  Array.from($('fund-select').options).forEach(o=>{o.disabled=state.debt>0&&o.value!=='debt'});if(state.debt>0)$('fund-select').value='debt';
  renderLedgerExtra()}
-function renderStock(){let html='';for(const r of RARITIES){const ps=PRIZES.filter(p=>p.rarity===r&&p.cap);if(!ps.length)continue;html+=`<h3 style="margin:15px 0 4px;color:${COLORS[r]}">${r}</h3>`+ps.map(p=>`<div class="stock-row"><div><strong>${esc(p.name)}</strong><small>${money(p.amount)}まで</small></div><b>${stockRemaining(p)} / ${p.cap}</b></div>`).join('')}$('stock-list').innerHTML=html;
- const ex=PRIZES.filter(p=>['UR','SSR','SR'].includes(p.rarity));$('exchange-prize').innerHTML=ex.map(p=>`<option value="${p.id}" ${stockRemaining(p)===0?'disabled':''}>${p.rarity} · ${esc(p.name)} (${stockRemaining(p)}個)</option>`).join('');$('exchange-counts').innerHTML=['UR','SSR','SR'].map(r=>`<div class="resource-chip"><div class="lab">${r}交換券</div><div class="amt">${state.exchangeTickets[r]||0}</div></div>`).join('');
- const p=PRIZES.find(x=>x.id===$('exchange-prize').value);$('exchange-submit').disabled=!p||!stockRemaining(p)||!(state.exchangeTickets[p.rarity]>0);
- $('gacha-history-list').innerHTML=state.events.filter(e=>e.kind==='gacha'||e.kind==='exchange').slice(0,160).map(x=>`<div class="ledger-entry"><div><b>${esc(x.title)}</b><small>${esc(x.note)} · ${esc(x.at)}</small></div></div>`).join('')||'<p class="minor">まだ抽選履歴はありません。</p>';
- $('morning-history-list').innerHTML='<p class="minor">景品内容が未設定のため、抽選は開始していません。</p>';
- $('story-history-list').innerHTML='<p class="minor">北海道ストーリーの抽選は準備中です。</p>';
- const now=new Date(),jst=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);$('morning-status').textContent=jst<'09:00'?'9:00前です。景品設定後に1日1回利用できます。':'本日の朝9:00を過ぎました。次の朝くじは明日（景品設定後）。';}
+function renderStock(){
+ $('exchange-counts').innerHTML=['UR','SSR','SR'].map(r=>`<div class="resource-chip"><div class="lab">${r}交換券</div><div class="amt">${state.exchangeTickets[r]||0}枚</div></div>`).join('');
+ $('stock-list').innerHTML=RARITIES.map(r=>{
+   const ps=PRIZES.filter(p=>p.rarity===r);
+   if(!ps.length)return '';
+   return `<section class="gacha-stock-group"><h3 style="color:${COLORS[r]}">${r}<small> ${ps.length}種</small></h3>
+     ${ps.map(p=>{
+       const remaining=p.cap?stockRemaining(p):Infinity;
+       const exchangeable=['UR','SSR','SR'].includes(p.rarity);
+       const count=state.exchangeTickets[r]||0;
+       const available=exchangeable&&remaining>0&&count>0;
+       return `<div class="stock-row gacha-prize-row"><div class="gacha-prize-desc">
+         <strong>${esc(p.name)}</strong><small>${p.amount?money(p.amount)+' · ':''}残り ${Number.isFinite(remaining)?remaining+' / '+p.cap:'無制限'}</small>
+         </div><button type="button" class="btn secondary gacha-redeem" data-gacha-redeem="${p.id}"
+           ${available?'':'disabled'}>${!exchangeable?'交換対象外':remaining<=0?'品切れ':count<1?'券が不足':'🎟️ 交換'}</button></div>`;
+     }).join('')}</section>`;
+ }).join('');
+ $('gacha-history-list').innerHTML=state.events.filter(e=>e.kind==='gacha'||e.kind==='exchange').slice(0,250).map(x=>
+ `<div class="ledger-entry"><div><b>${esc(x.title)}</b><small>${esc(x.note)} · ${esc(x.at)}</small></div></div>`).join('')||'<p class="minor">まだ抽選履歴はありません。</p>';
+ $('morning-history-list').innerHTML='<p class="minor">景品がまだ設定されていないため、抽選履歴はありません。</p>'; const now=new Date(),jst=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);$('morning-status').textContent=jst<'09:00'?'9:00前です。景品設定後に1日1回利用できます。':'本日の朝9:00を過ぎました。次の朝くじは明日（景品設定後）。';}
 
 function renderStats(){const d=today(),todayGem=state.daily[d]||0;$('stat-gems').textContent=fmt(state.gems);$('stat-savings').textContent=fmt(state.savings);$('stat-coins').textContent=fmt(state.resources.coins);$('stat-jewels').textContent=fmt(state.jewels);$('hk-gauge-fill').style.width=Math.min(100,state.savings/150000*100)+'%';
  $('resource-strip').innerHTML=[['physical','フィジカル'],['mental','メンタル'],['technical','テクニック'],['base','共通pt'],['wisdom','悟性'],['ingenuity','工夫'],['coins','ニャンコイン']].map(([k,n])=>`<div class="resource-chip"><div class="lab">${n}</div><div class="amt">${fmt(state.resources[k])}${k==='coins'?'<small> 🐱</small>':''}</div></div>`).join('');
  $('daily-progress').textContent=todayGem+' / 250';if(document.activeElement!==$('daily-gems'))$('daily-gems').value=todayGem;
  $('draw-count').textContent=fmt(state.draws);$('draw-one').disabled=state.gems<150;$('draw-eleven').disabled=state.gems<1500;const probs=probabilities();$('rarity-grid').innerHTML=probs.map(x=>`<div class="rarity ${x.rarity}"><b>${x.rarity}</b><span>${(x.prob*100).toFixed(2)}%</span></div>`).join('');$('rarity-bar').innerHTML=probs.map(x=>`<span style="width:${x.prob*100}%;background:${COLORS[x.rarity]}"></span>`).join('');
  const buffs=[];if(state.rStreak>=12)buffs.push('12連続R：次はSR以上');else if(state.rStreak>=5)buffs.push('連続R救済：'+state.rStreak);if(state.drought>=20)buffs.push('SSR以上未獲得：'+state.drought);$('pity-caption').textContent=buffs.join(' · ')||'累計回数・直近結果で自動調整';
- $('result-count').textContent=state.latest.length?state.latest.length+'回分':'まだありません';$('result-area').innerHTML=state.latest.length?state.latest.map((r,i)=>`<div class="result ${r.rarity} ${['MR','UR'].includes(r.rarity)?'top':''}"><div class="rar">${r.rarity} · #${r.draw}</div><div class="prize-name">${esc(r.name)}</div><div class="effect">${esc(r.outcome)}</div></div>`).join(''):'<div class="notice" style="grid-column:1/-1">ジェムを貯めて、ガチャを回そう 🐾</div>';
  $('saving-total').textContent=money(state.savings);$('saving-percent').textContent=(state.savings/150000*100).toFixed(1)+'% 達成';$('saving-remaining').textContent='残り '+money(Math.max(0,150000-state.savings));$('saving-fill').style.width=Math.min(100,state.savings/150000*100)+'%';
  $('pending-count').textContent=state.pending.length+'件';$('pending-list').innerHTML=state.pending.length?state.pending.map((e,i)=>`<div class="save-bonus"><div class="small"><b>${esc(e.detail)}</b><div class="tiny dim">${esc(e.at||'')} ${e.draw?'#'+e.draw:''}</div></div>${e.kind==='assign-affection'?`<div class="formrow"><select class="inline-select" id="pending-char-${i}">${CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><button class="btn secondary" data-assign="${i}" type="button">付与</button></div>`:'<span class="pill">保管中</span>'}</div>`).join(''):'<p class="minor">未割当の好感度・チケットはありません。</p>';
  $('voucher-count').textContent=state.vouchers.length+'件';$('voucher-list').innerHTML=state.vouchers.length?state.vouchers.map(v=>`<div class="listitem"><div><span class="pill ${esc(v.rarity)}">${esc(v.rarity)}</span><span class="name"> ${esc(v.name)}</span><div class="sub">#${v.draw} · ${esc(v.at)}</div></div><div class="amount">${money(v.amount)}</div></div>`).join(''):'<p class="minor">まだ出費権利はありません。</p>';
- $('catalog-list').innerHTML=RARITIES.map(r=>`<div style="margin-top:10px"><strong style="color:${COLORS[r]}">${r}</strong><span class="tiny dim"> · ${PRIZES.filter(p=>p.rarity===r).length}種 / ${TIER_TICKETS[r]}枠</span>${PRIZES.filter(p=>p.rarity===r).map(p=>`<div class="catalogrow"><span class="pill ${r}">${r}</span><span>${esc(p.name)}</span><span class="count">${state.wins[p.id]||0}回${p.cap?' · 権利 '+Math.min(state.wins[p.id]||0,p.cap)+'/'+p.cap:''}</span></div>`).join('')}</div>`).join('');
 renderFinance();renderStock();}
 function renderInput(){const d=$('training-date').value||today();const row=state.trainingDaily[d]||{};if(document.activeElement&&!document.activeElement.closest('#training-form')){RES.forEach(k=>{$('earn-'+k).value=row[k]||0});$('training-note').value=row.note||''}
  $('training-balances').innerHTML=[...RES,'base'].map(k=>`<div class="listitem"><div class="name">${LABELS[k]}</div><div class="amount">${fmt(state.resources[k])}${k==='coins'?' 🐱':' pt'}</div></div>`).join('');
@@ -450,7 +480,9 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
   document.querySelectorAll('[data-intake]').forEach(b=>b.addEventListener('click',()=>setIntakeView(b.dataset.intake)));
   document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.jump==='saving')openSheet('saving');else selectTab(b.dataset.jump)}));
  document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openSheet(b.dataset.open)));document.querySelectorAll('[data-info]').forEach(b=>b.addEventListener('click',()=>toast('北海道貯金10円＝1💠、100💠で1回引けます')));
- document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));$('drawer-back').addEventListener('click',closePage);
+ document.querySelectorAll('[data-gacha-tab]').forEach(b=>b.addEventListener('click',()=>switchGachaPage(b.dataset.gachaTab)));
+ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
+ $('hkg-root').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)openPage(b.dataset.page)});$('drawer-back').addEventListener('click',closePage);
  document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click',closeSheet));
  $('ledger-type').addEventListener('change',renderLedgerExtra);$('ledger-source').addEventListener('change',renderLedgerExtra);$('ledger-date').addEventListener('change',renderLedgerExtra);
   $('menu-open').addEventListener('click',()=>openDrawer('menu-drawer'));
@@ -487,9 +519,19 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  else if(src==='ticket'){const v=state.vouchers.find(x=>x.uid===$('ledger-voucher')?.value);if(!v||v.used||v.amount<amount)return toast('チケット残額と利用金額を確認してね');v.used=amount;const remain=v.amount-amount;if(remain>0){state.funds.unallocated+=remain;state.fundCredits.push({key:'unallocated',amount:remain,date:today()})}label='ガチャチケット：'+v.name;source='ticket:'+v.uid}
  else return toast('支出元を選んでね')}
  state.ledger.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),date,type,source,amount,label,note,debtAdded});log('ledger',label+' '+money(amount),note);$('ledger-amount').value='';$('ledger-note').value='';persist();render();toast(type==='income'?'収入を記録したよ':'支出を記録したよ')});
- $('exchange-prize').addEventListener('change',()=>{$('exchange-submit').disabled=!(state.exchangeTickets[PRIZES.find(p=>p.id===$('exchange-prize').value)?.rarity]>0)});
- $('exchange-submit').addEventListener('click',()=>{const p=PRIZES.find(x=>x.id===$('exchange-prize').value);if(!p||!['UR','SSR','SR'].includes(p.rarity))return toast('交換対象を選んでね');if(stockRemaining(p)<=0)return toast('品切れです');if(!state.exchangeTickets[p.rarity])return toast('交換券が足りません');if(!window.confirm(`${p.rarity}交換券1枚を「${p.name}」と交換しますか？`))return;state.exchangeTickets[p.rarity]--;if(p.cap)state.vouchers.unshift({uid:'ex-'+Date.now(),prize:p.id,name:p.name,rarity:p.rarity,amount:p.amount,used:0,at:timestamp(),source:'exchange'});else applyGacha(p);log('exchange',`${p.rarity}｜${p.name}`,'交換券1枚を消費');persist();render();toast('景品を持ち物に追加したよ')});
-
+ $('stock-list').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-gacha-redeem]');if(!btn)return;
+  const p=PRIZES.find(x=>x.id===btn.dataset.gachaRedeem);
+  if(!p||!['UR','SSR','SR'].includes(p.rarity))return toast('交換対象を選んでね');
+  if(stockRemaining(p)<=0)return toast('品切れです');
+  if(!state.exchangeTickets[p.rarity])return toast('交換券が足りません');
+  if(!window.confirm(`${p.rarity}交換券1枚を「${p.name}」と交換しますか？`))return;
+  state.exchangeTickets[p.rarity]--;
+  if(p.cap)state.vouchers.unshift({uid:'ex-'+Date.now(),prize:p.id,name:p.name,rarity:p.rarity,amount:p.amount,used:0,at:timestamp(),source:'exchange'});
+  else applyGacha(p);
+  log('exchange',`${p.rarity}｜${p.name}`,'交換券1枚を消費');
+  persist();render();toast('景品を持ち物に追加したよ');
+ });
  const characterApi={
  state:()=>state,chars:CHARS,ATTR,KEYS,GROUPS,GIFTS,giftValue,toast,log,
  commit:()=>{persist();render()},save:()=>{persist();render()},

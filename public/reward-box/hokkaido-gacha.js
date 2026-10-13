@@ -153,65 +153,54 @@
     return CARDS.filter(c=>desired.includes(c.rarity)&&!hk.collection[c.id]);
   }
   function render(state) {
-    const root=document.getElementById('hkg-root');
+    const root=document.getElementById('hkg-root'),exRoot=document.getElementById('hkg-exchange-root');
     if(!root)return;
     const hk=state.hokkaidoGacha;
     const unique=Object.keys(hk.collection).filter(id=>hk.collection[id]>0).length;
-    const selectable=sortedSelectable(state);
     const selected=storyCard&&CARD_BY_ID[storyCard]&&hk.collection[storyCard]?CARD_BY_ID[storyCard]:null;
     root.innerHTML=`
-      <div class="heading"><div><h2>✈️ 北海道貯金ガチャ</h2>
-      <p class="minor">単一ガチャ 全132種 · 旅行貯金だけでジュエルを獲得</p></div>
-      <span class="badge">6か月・15万円</span></div>
-      <div class="hk-hero">
-        <div class="hk-hero-scene">🏔️ <span>HOKKAIDO</span> ❄️</div>
-        <div class="hk-hero-stats"><div><small>北海道ジュエル</small><b>💠 ${state.jewels.toLocaleString('ja-JP')}</b></div>
-        <div><small>カード収集</small><b>${unique} / 132</b></div>
-        <div><small>交換メダル</small><b>🪙 ${hk.medals}</b></div></div>
-      </div>
+      <div class="heading"><div><h2>✈️ 北海道ロマン</h2><p class="minor">全132種の北海道カード</p></div><span class="badge">貯金連動</span></div>
+      <div class="hk-hero"><div class="hk-hero-scene">🏔️ <span>HOKKAIDO</span> ❄️</div>
+      <div class="hk-hero-stats"><div><small>北海道ジュエル</small><b>💠 ${state.jewels.toLocaleString('ja-JP')}</b></div>
+      <div><small>カード収集</small><b>${unique} / 132</b></div>
+      <div><small>累計抽選</small><b>${hk.draws}回</b></div></div></div>
       <div class="hk-actionrow">
-        <button class="btn secondary" type="button" data-hk-draw="1" ${state.jewels<100?'disabled':''}>1回 <small>💠100</small></button>
-        <button class="btn" type="button" data-hk-draw="10" ${state.jewels<1000?'disabled':''}>10連 <small>💠1,000</small></button></div>
-      <p class="minor">貯金10円＝1💠 · ガチャ1回100💠（貯金1,000円相当）。現金は減りません。</p>
-      <div class="hk-pities"><span>SSR以上保証まで <b>${10-hk.pitySSR}回</b></span><span>UR以上保証まで <b>${40-hk.pityUR}回</b></span></div>
-      <details class="hk-details"><summary>提供割合・ルールを確認する</summary>
-        <div class="hk-rate-grid">${RARITIES.map(r=>`<div><b style="color:${COLORS[r]}">${r}</b><small>${(PROBS[r]*100).toFixed(1)}%</small></div>`).join('')}</div>
-        <p class="minor">10回連続でSSR以上が出なければ10回目にSSR以上、40回連続でUR以上が出なければ40回目にUR以上を保証。単発・10連共通。カードは各レア内で均等抽選。</p>
-        <p class="minor">15万円達成でMR鳳長太郎を確定贈呈。重複時はメダルへ変換。既存のごほうびガチャとは別です。</p>
-      </details>
-      <div class="hk-section-title"><b>最新の抽選結果</b><small>累計 ${hk.draws}回</small></div>
-      <div class="hk-result-grid">${hk.latest.length?hk.latest.map(r=>{
-        const c=CARD_BY_ID[r.id];return `<button type="button" class="hk-card-button" data-hk-story="${c.id}">
-        ${imageCard(c,true)}<small>${r.duplicate?'重複 · メダル獲得':'NEW'} · #${r.draw}</small></button>`;}).join(''):'<div class="notice">初めての一枚を迎えよう。貯金額に応じてジュエルが増えます。</div>'}</div>
+      <button class="btn secondary" type="button" data-hk-draw="1" ${state.jewels<100?'disabled':''}>1回 <small>💠100</small></button>
+      <button class="btn" type="button" data-hk-draw="10" ${state.jewels<1000?'disabled':''}>10連 <small>💠1,000</small></button></div>
+      <div class="gacha-actions"><button type="button" class="ghost-link" data-page="hk-exchange">引換所</button>
+      <button type="button" class="ghost-link" data-page="story-history">抽選履歴</button></div>`;
+    if(exRoot)exRoot.innerHTML=`
+      <div class="hk-exchange-assets"><div class="hk-asset"><small>交換メダル</small><b>🪙 ${hk.medals}</b></div>
+      ${['UR','SSR','SR'].map(r=>`<div class="hk-asset"><small>${r}選択券</small><b>🎟️ ${hk.tickets[r]}</b></div>`).join('')}</div>
+      <div class="hk-exchange-controls"><label>交換方法<select id="hk-exchange-mode">
+       ${[['medals','メダル交換'],['UR','UR選択券'],['SSR','SSR選択券'],['SR','SR選択券']].map(([k,n])=>`<option value="${k}" ${exchangeMode===k?'selected':''}>${n}</option>`).join('')}
+      </select></label></div>
+      <p class="minor">未所持カードを交換できます。MRは抽選または15万円貯金達成で入手します。</p>
+      <div class="hk-section-title"><b>📚 カード図鑑</b><small>${unique}/132 収集</small></div>
+      <div class="hk-filter">${['ALL',...RARITIES].map(r=>`<button type="button" class="${rarityFilter===r?'active':''}" data-hk-filter="${r}">${r==='ALL'?'全132種':r} ${r==='ALL'?'':hkCount(state,r)+'/'}${r==='ALL'?'':CARDS.filter(c=>c.rarity===r).length}</button>`).join('')}</div>
+      <div class="hk-catalog">${CARDS.filter(c=>rarityFilter==='ALL'||c.rarity===rarityFilter).map(c=>{
+        const owned=Boolean(hk.collection[c.id]),cost=exchangeMode==='medals'?COSTS[c.rarity]:c.rarity===exchangeMode?1:null;
+        const balance=exchangeMode==='medals'?hk.medals:hk.tickets[exchangeMode];
+        const allowed=!owned&&cost!==undefined&&cost!==null&&balance>=cost;
+        return `<div class="hk-catalog-item">
+          <button type="button" class="hk-card-button" data-hk-story="${c.id}" ${owned?'':'disabled'}>${imageCard(c,owned)}
+          <small>所持 ${hk.collection[c.id]||0}枚 · 残り 無制限</small></button>
+          ${!owned&&cost!==undefined&&cost!==null?`<button type="button" class="btn secondary hk-redeem-button" data-hk-exchange="${c.id}" ${allowed?'':'disabled'}>交換 ${exchangeMode==='medals'?'🪙'+cost:'🎟️1枚'}</button>`:`<small class="hk-unavailable">${owned?'取得済み':'交換不可'}</small>`}
+        </div>`;
+      }).join('')}</div>
+      ${selected?`<div class="hk-story" role="region" aria-label="カードストーリー"><button type="button" data-hk-close aria-label="閉じる">×</button>
+        <span class="hk-rank" style="color:${COLORS[selected.rarity]}">${selected.rarity} · ${escapeHtml(selected.place)}</span>
+        <h3>${escapeHtml(selected.character)}｜${escapeHtml(selected.name)}</h3><p>${escapeHtml(selected.story)}</p>
+        <blockquote>「${escapeHtml(selected.line)}」</blockquote></div>`:''}
       <div class="hk-section-title"><b>🎟️ 貯金達成報酬</b><small>${hk.claimed.length}/6 達成</small></div>
       <div class="hk-milestones">${MILESTONES.map(r=>`<div class="hk-milestone ${hk.claimed.includes(r.at)?'done':''}">
         <span>${r.at.toLocaleString('ja-JP')}円</span><b>${r.name}</b>
-        <small>${hk.claimed.includes(r.at)?'✓ 受取済':'あと '+Math.max(0,r.at-state.savings).toLocaleString('ja-JP')+'円'}</small></div>`).join('')}</div>
-      <div class="hk-section-title"><b>🪙 重複カード交換所</b><small>UR200 / SSR80 / SR30 / R12 / N5</small></div>
-      <div class="hk-exchange-controls"><label>交換方法<select id="hk-exchange-mode">
-        ${[['medals','メダル交換'],['UR','UR選択券（'+hk.tickets.UR+'枚）'],['SSR','SSR選択券（'+hk.tickets.SSR+'枚）'],['SR','SR選択券（'+hk.tickets.SR+'枚）']].map(([k,n])=>`<option value="${k}" ${exchangeMode===k?'selected':''}>${n}</option>`).join('')}</select></label>
-        <label>未所持カード<select id="hk-exchange-card">${selectable.map(c=>`<option value="${c.id}">${c.rarity}｜${escapeHtml(c.character)}｜${escapeHtml(c.name)}${exchangeMode==='medals'?'（'+COSTS[c.rarity]+'枚）':''}</option>`).join('')}</select></label>
-        <button class="btn secondary" data-hk-exchange type="button" ${!selectable.length?'disabled':''}>交換する</button></div>
-      <div class="hk-section-title"><b>📚 カード図鑑</b><small>入手したカードはストーリー閲覧可</small></div>
-      <div class="hk-filter">${['ALL',...RARITIES].map(r=>`<button type="button" class="${rarityFilter===r?'active':''}" data-hk-filter="${r}">${r==='ALL'?'全132種':r} ${r==='ALL'?'':hkCount(state,r)+'/'}${r==='ALL'?'':CARDS.filter(c=>c.rarity===r).length}</button>`).join('')}</div>
-      <div class="hk-catalog">${CARDS.filter(c=>rarityFilter==='ALL'||c.rarity===rarityFilter).map(c=>
-        `<button type="button" class="hk-card-button" data-hk-story="${c.id}" ${hk.collection[c.id]?'':'disabled'}>
-        ${imageCard(c,!!hk.collection[c.id])}<small>${hk.collection[c.id]?'所持 ×'+hk.collection[c.id]:'未入手'}</small></button>`).join('')}</div>
-      ${selected?`<div class="hk-story" role="region" aria-label="カードストーリー">
-        <button type="button" data-hk-close aria-label="閉じる">×</button>
-        <span class="hk-rank" style="color:${COLORS[selected.rarity]}">${selected.rarity} · ${escapeHtml(selected.place)}</span>
-        <h3>${escapeHtml(selected.character)}｜${escapeHtml(selected.name)}</h3>
-        <p>${escapeHtml(selected.story)}</p><blockquote>「${escapeHtml(selected.line)}」</blockquote>
-        </div>`:''}
-      <p class="minor hk-footer">※ 現段階のカードはイラスト用の仮デザインです。文章・台詞は各カードに収録済み。</p>`;
+        <small>${hk.claimed.includes(r.at)?'✓ 受取済':'あと '+Math.max(0,r.at-state.savings).toLocaleString('ja-JP')+'円'}</small></div>`).join('')}</div>`;
     const list=document.getElementById('story-history-list');
-    if(list)list.innerHTML=state.storyHistory.length?state.storyHistory.slice(0,150).map(h=>
+    if(list)list.innerHTML=state.storyHistory.length?state.storyHistory.slice(0,200).map(h=>
       `<div class="listitem"><div class="name">${escapeHtml(h.name||h.id||'カード')}</div>
-        <div class="tiny dim">${escapeHtml(h.source||'獲得')}${h.duplicate?' · 重複':''}</div></div>`).join(''):'<p class="minor">まだ北海道カードの獲得履歴はありません。</p>';
-    const draw=document.getElementById('story-draw');
-    if(draw){draw.disabled=state.jewels<100;draw.textContent='1回 💠100';}
-  }
-  function hkCount(state,r){return CARDS.filter(c=>c.rarity===r&&state.hokkaidoGacha.collection[c.id]).length;}
+        <div class="tiny dim">${escapeHtml(h.source||'獲得')}${h.duplicate?' · 重複':''} · ${escapeHtml(h.at||'')}</div></div>`).join(''):'<p class="minor">まだ抽選履歴はありません。</p>';
+  }  function hkCount(state,r){return CARDS.filter(c=>c.rarity===r&&state.hokkaidoGacha.collection[c.id]).length;}
   // Commit the draw and the card inventory before playing any animation.
   // A skipped animation, page reload, or interrupted network cannot re-roll the result.
   function performDraw(count,askConfirmation=true){
@@ -234,12 +223,12 @@
   }
   function bind(context){
     api=context;
-    const root=document.getElementById('hkg-root');
+    const root=document.getElementById('hkg-root'),exRoot=document.getElementById('hkg-exchange-root');
     if(!root)return;
-    root.addEventListener('change',event=>{
+    if(exRoot)exRoot.addEventListener('change',event=>{
       if(event.target.id==='hk-exchange-mode'){exchangeMode=event.target.value;render(api.getState());}
     });
-    root.addEventListener('click',event=>{
+    const click=event=>{
       const b=event.target.closest('button');if(!b)return;
       const s=api.getState(),hk=s.hokkaidoGacha;
       if(b.dataset.hkFilter){rarityFilter=b.dataset.hkFilter;render(s);return;}
@@ -247,13 +236,11 @@
       if(b.dataset.hkStory){
         if(!hk.collection[b.dataset.hkStory])return;
         storyCard=b.dataset.hkStory;render(s);
-        root.querySelector('.hk-story')?.scrollIntoView({behavior:'smooth',block:'nearest'});return;
+        exRoot?.querySelector('.hk-story')?.scrollIntoView({behavior:'smooth',block:'nearest'});return;
       }
-      if(b.dataset.hkDraw){
-        performDraw(Number(b.dataset.hkDraw));return;
-      }
+      if(b.dataset.hkDraw){performDraw(Number(b.dataset.hkDraw));return;}
       if(b.dataset.hkExchange!==undefined){
-        const card=CARD_BY_ID[document.getElementById('hk-exchange-card')?.value];
+        const card=CARD_BY_ID[b.dataset.hkExchange];
         if(!card||hk.collection[card.id])return api.toast('未所持カードを選んでね');
         if(exchangeMode==='medals'){
           const cost=COSTS[card.rarity];
@@ -269,7 +256,8 @@
         storyCard=card.id;api.log('hokkaido','北海道カード交換',card.character+'｜'+card.name);
         api.persist();api.render();api.toast('カードを迎えました ♡');
       }
-    });
-  }
-  window.HokkaidoGacha={reconcile,credit,render,bind,CARDS,PROBS};
+    };
+    root.addEventListener('click',click);
+    if(exRoot)exRoot.addEventListener('click',click);
+  }  window.HokkaidoGacha={reconcile,credit,render,bind,CARDS,PROBS};
 })();
