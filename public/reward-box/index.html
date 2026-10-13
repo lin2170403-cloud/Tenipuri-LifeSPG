@@ -526,6 +526,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  $('date-form').addEventListener('submit',e=>{
   e.preventDefault();
   const amount=int($('date-value').value),src=$('date-source').value,note=$('date-note').value.trim();
+  if(state.debt>0)return toast('借金がある間は返済を優先してね');
   if(amount===null||amount<1||!Number.isSafeInteger(state.dateLocked+amount))return toast('有効な金額を入力してね');
   if(src!=='outside'&&availableFund(src)<amount)return toast('移動元ファンドの使用可能残高を確認してね');
   const name=src==='outside'?'予算外':FUND_META.find(x=>x[0]===src)?.[2];
