@@ -3,7 +3,7 @@ const E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
 const money=n=>Number(n||0).toLocaleString('ja-JP')+'円';
 const token=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const types={place:'📍場所',food:'🍰食べ物',gift:'🎁プレゼント',activity:'🎬観賞',other:'✨その他'};
-let api,selected=new Set(),photo='';
+let api,selected=new Set(),photo='',selectionChar=null;
 function migrate(s,chars){if(!s.dateProfiles||typeof s.dateProfiles!=='object')s.dateProfiles={};for(const c of chars){const d=s.dateProfiles[c.id]||{};if(!Array.isArray(d.wishlist))d.wishlist=[];if(!Array.isArray(d.memories))d.memories=[];s.dateProfiles[c.id]=d;}}
 function allocated(s){return Object.values(s.dateProfiles||{}).flatMap(x=>x.wishlist||[]).filter(x=>!x.done).reduce((n,x)=>n+(Number(x.funded)||0),0);}
 const available=s=>Math.max(0,s.dateLocked-allocated(s));
@@ -15,7 +15,7 @@ function usableVoucher(s,x){return x.voucherUid&&(s.vouchers||[]).some(v=>v.uid=
 function ready(s,x){return !x.done&&(x.voucherUid?usableVoucher(s,x):x.funded===x.cost);}
 
 function render(s,cid,canDate=true){
- migrate(s,api.chars);const d=s.dateProfiles[cid];
+ migrate(s,api.chars);if(selectionChar!==cid){selected.clear();selectionChar=cid;}const d=s.dateProfiles[cid];
  return `<div class="vdate"><div class="vdate-summary"><b>💗 未配分 ${money(available(s))}</b><p>割り当てた資金はほかの項目に移せません。</p></div>
  <div class="vdate-create-buttons"><button type="button" data-vdate-add>＋ ウィッシュを追加</button>
  <button type="button" data-vdate-ticket-add ${tickets(s).length?'':'disabled'}>🎟️ 出費権利を引用（${tickets(s).length}枚）</button></div>
@@ -23,7 +23,7 @@ function render(s,cid,canDate=true){
  const ok=ready(s,x),remain=Math.max(0,x.cost-x.funded);
  return `<div class="vdate-row"><label><input type="checkbox" data-vdate-select="${x.id}" ${selected.has(x.id)?'checked':''} ${ok?'':'disabled'}></label>
  <div><b>${types[x.type]||types.other} ${E(x.title)}</b><small>${x.voucherUid?'🎟️ 出費権利 '+money(x.cost):money(x.funded)+' / '+money(x.cost)} ${x.done?'· 実行済み':ok?'· 準備完了':'· 残り'+money(remain)}</small>
- <p>${E(x.note)}</p>${!x.done&&!x.voucherUid&&remain>0?`<form data-vdate-fund="${x.id}"><input type="number" min="1" max="${Math.min(remain,available(s))}" inputmode="numeric" placeholder="金額" required><button ${available(s)<1?'disabled':''}>入金</button></form>`:''}</div></div>`;
+ <p>${E(x.note)}</p>${!x.done&&x.voucherUid?`<button type="button" class="vdate-release" data-vdate-release="${x.id}">券の引用を解除</button>`:''}${!x.done&&!x.voucherUid&&remain>0?`<form data-vdate-fund="${x.id}"><input type="number" min="1" max="${Math.min(remain,available(s))}" inputmode="numeric" placeholder="金額" required><button ${available(s)<1?'disabled':''}>入金</button></form>`:''}</div></div>`;
  }).join('')||'<p>登録されたウィッシュはまだありません。</p>'}
  ${!canDate?'<p class="cp-notice">炎がすべて消えているため、デート実行はできません。ウィッシュリストの編集・入金は可能です。</p>':''}<button type="button" class="cp-primary" data-vdate-go ${selected.size&&canDate?'':'disabled'}>💗 デートに行く（${selected.size}件）</button>
  <h3>思い出アルバム</h3>${d.memories.slice().reverse().map(m=>`<details class="vdate-memory"><summary>${E(m.date)} · ${m.items.length}件</summary>${m.image?`<img src="${m.image}" alt="思い出">`:''}<p>${E(m.note)}</p><small>${m.items.map(x=>E(x.title)).join('、')}</small></details>`).join('')||'<p>まだ思い出はありません。</p>'}</div>`;
@@ -90,6 +90,12 @@ function bind(ctx){api=ctx;document.addEventListener('change',e=>{
  document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const cid=api.current();if(!cid)return;
  if(b.hasAttribute('data-vdate-add'))create(cid);
  if(b.hasAttribute('data-vdate-ticket-add'))createFromTicket(cid);
+ if(b.dataset.vdateRelease){
+  const d=api.state().dateProfiles[cid],item=d.wishlist.find(x=>x.id===b.dataset.vdateRelease);
+  if(!item||item.done||!item.voucherUid)return;
+  if(!window.confirm('出費チケットの引用を解除し、未使用の状態に戻しますか？'))return;
+  d.wishlist=d.wishlist.filter(x=>x.id!==item.id);selected.delete(item.id);api.save();api.toast('券の引用を解除しました');return;
+ }
  if(b.hasAttribute('data-vdate-go')){if(!api.canDate(cid))return api.toast('炎が消えているためデート実行できません');const items=api.state().dateProfiles[cid].wishlist.filter(x=>selected.has(x.id)&&ready(api.state(),x));if(items.length)execute(cid,items)}
  });
  document.addEventListener('submit',e=>{const form=e.target;if(!form.matches('[data-vdate-fund]'))return;e.preventDefault();
