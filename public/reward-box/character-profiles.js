@@ -57,7 +57,7 @@ function gifts(s){
 function detail(s){
  const t=s.characters[id],cap=[150,300,550,900,1200,1500][t.stage-1];
  const pane=tab==='skills'?skillPane():tab==='radar'?radarPane():
- (S().flames(s,id)?window.DateSystem.render(s,id):'<div class="cp-panel"><h3>💗 デート</h3><p>炎がすべて消えているため、デートはできません。</p></div>');
+ window.DateSystem.render(s,id,S().flames(s,id)>0);
  return `<button class="cp-back" data-cp-back>‹ 12人の王子たち</button>
  <div class="cp-profile"><div class="cp-photo">${avatar(s,id)}</div><div class="cp-info"><h2>${E(person().name)}</h2>
  <b>第${t.stage}段階 / 6</b>${S().flameHTML(s,id)}
