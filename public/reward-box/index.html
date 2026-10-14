@@ -604,7 +604,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
 };
 window.CharacterStamps.bind({getState:()=>state,chars:CHARS,toast,log,save:characterApi.save,openSettings:characterApi.openSettings});
 window.CharacterProfiles.bind(characterApi);
-window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
+window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
 window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
 window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
 bind();
