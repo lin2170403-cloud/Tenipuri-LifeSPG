@@ -144,7 +144,8 @@ input,textarea,select{font-size:16px!important}
 <div class="drawer-scroll menu-list">
 <button class="menu-row" data-page="inventory" type="button"><span>▣</span> 持ち物 <b>›</b></button>
 <button class="menu-row" data-page="manual" type="button"><span>ⓘ</span> 使い方・説明書 <b>›</b></button>
-<button class="menu-row" data-page="settings" type="button"><span>⚙</span> キャラとスタンプ帳設定 <b>›</b></button>
+<button class="menu-row" data-page="basic" type="button"><span>⚙</span> 基礎設定 <b>›</b></button>
+<button class="menu-row" data-page="settings" type="button"><span>♟</span> キャラとスタンプ帳設定 <b>›</b></button>
 <button class="menu-row" data-page="backup" type="button"><span>⇵</span> データバックアップ <b>›</b></button>
 </div></aside><nav aria-label="メインメニュー" class="bottom-tabs"><button aria-selected="false" class="tab" data-tab="timeline" type="button"><span class="tab-icon">▦</span><span>カレンダー</span></button><button aria-selected="false" class="tab" data-tab="wallet" type="button"><span class="tab-icon">▤</span><span>お財布</span></button>
 <button aria-selected="true" class="tab active" data-tab="chars" type="button"><span class="tab-icon">♡</span><span>キャラ</span></button>
@@ -197,10 +198,9 @@ input,textarea,select{font-size:16px!important}
  <details class="expander" open><summary>🎟️ キャラ専用・一回休み券 <span class="badge" id="stamp-ticket-count">0枚</span></summary>
  <div class="content"><div id="stamp-tickets-list"></div></div></details>
  <div id="drawer-pending-slot"><details class="expander"><summary>🎁 未割当報酬 <span class="badge" id="pending-count">0件</span></summary>
- <div class="content"><p class="minor">指定キャラ好感度はここで相手を選んで付与できます。</p><div class="list list-scroll" id="pending-list"></div></div></details></div>
+ <div class="content"><div class="list list-scroll" id="pending-list"></div></div></details></div>
  <div id="drawer-voucher-slot"><details class="expander"><summary>🎫 出費チケット <span class="badge" id="voucher-count">0件</span></summary>
- <div class="content"><p class="minor">未使用券はお財布の出費記録で使用するか、キャラのデート・ウィッシュリストに引用できます。引用済みの券は通常の出費には使えません。</p>
- <div class="list list-scroll" id="voucher-list"></div></div></details></div>
+ <div class="content"><div class="list list-scroll" id="voucher-list"></div></div></details></div>
  </div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
 
 <div class="panel"><h3>✈️ 北海道ロマン：提供割合・ルール</h3>
@@ -208,9 +208,9 @@ input,textarea,select{font-size:16px!important}
 <p class="minor">全132種類の単一ガチャ。北海道貯金10円につき北海道ジュエル1個、100個で1回、1,000個で10連。貯金した現金は減りません。</p>
 <p class="minor">SSR以上が10回連続で出なければ10回目にSSR以上、UR以上が40回連続で出なければ40回目にUR以上確定。単発・10連共通、各レア内でカードを均等抽選します。</p>
 <p class="minor">15万円貯金達成で鳳長太郎MR確定。重複カードから交換メダルを獲得できます。選択券・メダルは北海道の「引換所」で使用します。MRは交換対象外です。</p></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
-<div id="content-settings"><div class="panel" id="app-basic-settings"></div><div class="panel"><div id="cp-settings"></div></div></div>
+<div id="content-basic"><div class="panel" id="app-basic-settings"></div></div><div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
-<div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><p class="minor">同じレアリティの交換券で景品を交換します。交換できない景品も図鑑で確認できます。</p><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>🌅 朝の運試し・引換所</h3><p class="minor">このガチャは景品が未設定です。景品を決めたら図鑑と引換所を追加します。</p></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
+<div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>🌅 朝の運試し・引換所</h3><p class="minor">準備中</p></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
 <div id="content-morning-history"><div class="panel"><h3>朝くじ履歴</h3><div id="morning-history-list"></div></div></div>
 <div id="content-story-history"><div class="panel"><h3>北海道ミニストーリー履歴</h3><div id="story-history-list"></div></div></div>
@@ -342,7 +342,7 @@ function setWalletView(view){walletView=view;document.querySelectorAll('[data-wa
 function setIntakeView(view){intakeView=view;document.querySelectorAll('[data-intake]').forEach(x=>x.classList.toggle('active',x.dataset.intake===view));document.querySelectorAll('.intake-view').forEach(x=>x.classList.toggle('active',x.id==='intake-'+view))}
 function openDrawer(id){closeDrawers();document.getElementById(id).classList.add('open');document.getElementById(id).setAttribute('aria-hidden','false');$('drawer-backdrop').hidden=false;document.body.style.overflow='hidden'}
 function closeDrawers(){document.querySelectorAll('.side-drawer').forEach(x=>{x.classList.remove('open');x.setAttribute('aria-hidden','true')});$('drawer-backdrop').hidden=true;document.body.style.overflow=''}
-const TITLES={inventory:'持ち物',manual:'使い方・説明書',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',exchange:'姫猫ご褒美・引換所','morning-exchange':'朝の運試し・引換所','hk-exchange':'北海道ロマン・引換所','gacha-history':'ガチャ履歴','morning-history':'朝くじ履歴','story-history':'北海道ストーリー履歴'};
+const TITLES={inventory:'持ち物',manual:'使い方・説明書',basic:'基礎設定',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',exchange:'姫猫ご褒美・引換所','morning-exchange':'朝の運試し・引換所','hk-exchange':'北海道ロマン・引換所','gacha-history':'ガチャ履歴','morning-history':'朝くじ履歴','story-history':'北海道ストーリー履歴'};
 function openPage(id){if(!TITLES[id])return;closeDrawers();activeSubpage=id;$('drawer-page-title').textContent=TITLES[id];const container=$('drawer-page-content'),section=$('content-'+id);container.replaceChildren(section);$('drawer-page').classList.add('open');$('drawer-page').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';render()}
 function closePage(){if(!activeSubpage)return;const el=$('content-'+activeSubpage);if(el)$('subpage-repository').appendChild(el);activeSubpage='';$('drawer-page').classList.remove('open');$('drawer-page').setAttribute('aria-hidden','true');document.body.style.overflow=''}
 function openSheet(id){if(id==='training')id='intake';
