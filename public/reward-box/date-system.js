@@ -7,7 +7,7 @@ let api,selected=new Set(),photo='';
 function migrate(s,chars){if(!s.dateProfiles||typeof s.dateProfiles!=='object')s.dateProfiles={};for(const c of chars){const d=s.dateProfiles[c.id]||{};if(!Array.isArray(d.wishlist))d.wishlist=[];if(!Array.isArray(d.memories))d.memories=[];s.dateProfiles[c.id]=d;}}
 function allocated(s){return Object.values(s.dateProfiles||{}).flatMap(x=>x.wishlist||[]).filter(x=>!x.done).reduce((n,x)=>n+(Number(x.funded)||0),0);}
 const available=s=>Math.max(0,s.dateLocked-allocated(s));
-function render(s,cid){
+function render(s,cid,canDate=true){
  migrate(s,api.chars);const d=s.dateProfiles[cid];
  return `<div class="vdate"><div class="vdate-summary"><b>💗 未配分 ${money(available(s))}</b><p>割り当てた資金はほかの項目に移せません。</p></div>
  <button type="button" data-vdate-add>＋ ウィッシュを追加</button>
@@ -17,7 +17,7 @@ function render(s,cid){
  <div><b>${types[x.type]||types.other} ${E(x.title)}</b><small>${money(x.funded)} / ${money(x.cost)} ${x.done?'· 実行済み':ok?'· 入金完了':'· 残り'+money(remain)}</small>
  <p>${E(x.note)}</p>${!x.done&&remain>0?`<form data-vdate-fund="${x.id}"><input type="number" min="1" max="${Math.min(remain,available(s))}" inputmode="numeric" placeholder="金額" required><button ${available(s)<1?'disabled':''}>入金</button></form>`:''}</div></div>`;
  }).join('')||'<p>登録されたウィッシュはまだありません。</p>'}
- <button type="button" class="cp-primary" data-vdate-go ${selected.size?'':'disabled'}>💗 デートに行く（${selected.size}件）</button>
+ ${!canDate?'<p class="cp-notice">炎がすべて消えているため、デート実行はできません。ウィッシュリストの編集・入金は可能です。</p>':''}<button type="button" class="cp-primary" data-vdate-go ${selected.size&&canDate?'':'disabled'}>💗 デートに行く（${selected.size}件）</button>
  <h3>思い出アルバム</h3>${d.memories.slice().reverse().map(m=>`<details class="vdate-memory"><summary>${E(m.date)} · ${m.items.length}件</summary>${m.image?`<img src="${m.image}" alt="思い出">`:''}<p>${E(m.note)}</p><small>${m.items.map(x=>E(x.title)).join('、')}</small></details>`).join('')||'<p>まだ思い出はありません。</p>'}</div>`;
 }
 function popup(markup){
@@ -58,7 +58,7 @@ function bind(ctx){api=ctx;document.addEventListener('change',e=>{
  });
  document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const cid=api.current();if(!cid)return;
  if(b.hasAttribute('data-vdate-add'))create(cid);
- if(b.hasAttribute('data-vdate-go')){const items=api.state().dateProfiles[cid].wishlist.filter(x=>selected.has(x.id)&&!x.done&&x.funded===x.cost);if(items.length)execute(cid,items)}
+ if(b.hasAttribute('data-vdate-go')){if(!api.canDate(cid))return api.toast('炎が消えているためデート実行できません');const items=api.state().dateProfiles[cid].wishlist.filter(x=>selected.has(x.id)&&!x.done&&x.funded===x.cost);if(items.length)execute(cid,items)}
  });
  document.addEventListener('submit',e=>{const form=e.target;if(!form.matches('[data-vdate-fund]'))return;e.preventDefault();
  const s=api.state(),cid=api.current(),item=s.dateProfiles[cid].wishlist.find(x=>x.id===form.dataset.vdateFund),amount=Number(form.querySelector('input').value);
