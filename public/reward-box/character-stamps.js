@@ -4,7 +4,7 @@ const pad=n=>String(n).padStart(2,'0');
 const day=(d=new Date())=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day;};
 const shift=(date,n)=>{const d=new Date(date+'T12:00:00+09:00');d.setUTCDate(d.getUTCDate()+n);return day(d);};
 const id=()=>`book_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-let api,chosen=null,edit=null,draft=null,month=day().slice(0,7),feedback='';
+let api,chosen=null,edit=null,draft=null,month=day().slice(0,7),selectedDay=day(),feedback='';
 const img=(value,cl='')=>value?`<img class="${cl}" src="${value}" alt="">`:'';
 const conf=(s,c)=>s.charStamps[c],book=(s,c)=>conf(s,c)?.books.find(b=>b.id===conf(s,c).active)||null;
 function migrate(s,characters) {
@@ -24,6 +24,9 @@ function migrate(s,characters) {
  if(!Number.isSafeInteger(s.protectionDays)||s.protectionDays<0)s.protectionDays=0;
 }
 function stamps(s,c) {const dates={};for(const b of conf(s,c).books)for(const d of Object.keys(b.days||{}))dates[d]=true;return dates;}
+function ticketLedger(s){if(!s.stampTickets||typeof s.stampTickets!=='object')s.stampTickets={};return s.stampTickets;}
+function cycles(b){const dates=Object.keys(b.days||{}).filter(k=>b.days[k]&&!b.days[k].protected).sort();let run=0,last='',rewards=[];for(const d of dates){run=d===shift(last,1)?run+1:1;last=d;if(run===7){rewards.push(d);run=0;last='';}}return rewards;}
+function reconcileTickets(s,c){const ledger=ticketLedger(s);if(!ledger[c])ledger[c]={earned:{},spent:0};const entry=ledger[c],all=new Set();for(const b of conf(s,c).books)for(const end of cycles(b))all.add(b.id+':'+end);entry.earned=Object.fromEntries([...all].map(x=>[x,true]));return Math.max(0,all.size-entry.spent);}
 function flames(s,c) {
  const dates=stamps(s,c),t=day(),anchor=dates[t]?t:shift(t,-1);
  let value=0;for(let i=0;i<3;i++){if(dates[shift(anchor,-i)])value++;else break;}
@@ -42,34 +45,27 @@ function calendar(s,c) {
   <div class="cp-week">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(x=>`<b>${x}</b>`).join('')}</div>
   <div class="cp-days">${Array(first).fill('<div></div>').join('')}${Array.from({length:count},(_,i)=>{
    const date=month+'-'+pad(i+1),marked=!!b.days[date];
-   return `<div class="cp-day ${date===t?'today':''}"><small>${i+1}</small>${marked?`<span class="cp-mark">${b.stamp?img(b.stamp,'cp-stamp-img'):'✓'}</span>`:''}</div>`;
+   return `<button type="button" data-cp-date="${date}" class="cp-day ${date===t?'today':''} ${date===selectedDay?'selected':''}"><small>${i+1}</small>${marked?`<span class="cp-mark">${b.stamp?img(b.stamp,'cp-stamp-img'):'✓'}</span>`:''}</button>`;
   }).join('')}</div>
-  <button data-cp-stamp type="button" class="cp-big-stamp" ${b.days[t]?'disabled':''}>${b.days[t]?'✓ 本日押印済み':'ハンコを押してもらう'}</button>
+  <button data-cp-stamp type="button" class="cp-big-stamp">${b.days[selectedDay]?'打刻記録を取り消す':'選択日 '+selectedDay+' にハンコを押す'}</button><p class="cp-help">7日連続でこのキャラ専用の一回休み券 · 所持 ${reconcileTickets(s,c)}枚</p>
   <p class="cp-feedback">${esc(feedback||'今日の頑張りを残そう。')}</p>
   <button class="cp-action" data-cp-settings="${c}">⚙️ スタンプ帳を編集</button></section>`;
 }
 function stamp(s,c) {
- const b=book(s,c),t=day();if(!b)return api.toast('スタンプ帳を作成してください');
- if(b.days[t])return api.toast('今日は押印済みです');
- b.days[t]={time:new Date().toISOString()};
- const r=Math.random()*100;let sum=0;feedback='今日もよく頑張ったね ♡';
- for(const m of b.messages){sum+=m.chance;if(r<sum){feedback=m.text;break;}}
- api.log('stamp',api.chars.find(x=>x.id===c).name+'｜'+b.name,t);
- api.save();api.toast(feedback);
+ const b=book(s,c),d=selectedDay;if(!b)return api.toast('スタンプ帳を作成してください');
+ if(d>day())return api.toast('未来の日付は打刻できません');
+ if(b.days[d]){if(!window.confirm('打刻記録をキャンセルしますか？'))return;delete b.days[d];feedback='打刻を取り消しました';}
+ else {b.days[d]={time:new Date().toISOString()};const r=Math.random()*100;let sum=0;feedback='今日もよく頑張ったね ♡';for(const m of b.messages){sum+=m.chance;if(r<sum){feedback=m.text;break;}}}
+ const n=reconcileTickets(s,c);api.log('stamp',api.chars.find(x=>x.id===c).name+'｜'+b.name,d+' · 休み券 '+n+'枚');api.save();api.toast(feedback);
 }
 function protect(s,c,slot=null) {
  const b=book(s,c);if(!b)return api.toast('スタンプ帳を作成してください');
- const n=flames(s,c);
- if(n>=3||(slot!==null&&Number(slot)<n))return api.toast('その炎はすでに灯っています');
- const t=day(),marked=stamps(s,c),anchor=marked[t]?t:shift(t,-1);
- const target=shift(anchor,-n);
- if(marked[target])return api.toast('この日はすでに記録されています');
- const pending=(s.pending||[]).findIndex(p=>p.kind==='ticket'&&String(p.detail||'').includes('チェックイン救済'));
- if(s.protectionDays===0&&pending<0)return api.toast('火の保護チケットがありません');
- if(!window.confirm(target+' の未打刻を保護しますか？（チケット1日分）'))return;
- if(s.protectionDays===0){s.pending.splice(pending,1);s.protectionDays+=3;}
- s.protectionDays--;b.days[target]={protected:true,time:new Date().toISOString()};
- api.log('stamp','炎を保護',api.chars.find(x=>x.id===c).name+' '+target);api.save();api.toast('🔥 炎を守りました');
+ const n=flames(s,c);if(n>=3||(slot!==null&&Number(slot)<n))return api.toast('その炎は灯っています');
+ const d=day(),all=stamps(s,c),anchor=all[d]?d:shift(d,-1),target=shift(anchor,-n);
+ if(reconcileTickets(s,c)<1)return api.toast('このキャラ専用の一回休み券がありません');
+ if(!window.confirm(target+' の炎を、一回休み券で守りますか？'))return;
+ ticketLedger(s)[c].spent++;b.days[target]={protected:true,time:new Date().toISOString()};
+ api.log('stamp','一回休み券を使用',c+' '+target);api.save();api.toast('炎を守りました 🔥');
 }
 function renderSettings(s){
  const root=document.getElementById('cp-settings');if(!root)return;
@@ -162,7 +158,8 @@ function bind(context) {
  renderSettings(api.getState());
 }
 function open(c) {chosen=c;edit=null;api.openSettings();renderSettings(api.getState());}
+function chooseDay(value){if(/^\d{4}-\d{2}-\d{2}$/.test(value))selectedDay=value;}
 function changeMonth(n){const [y,m]=month.split('-').map(Number),d=new Date(Date.UTC(y,m-1+Number(n),1));month=d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1);}
-function resetMonth(){month=day().slice(0,7);feedback='';}
-window.CharacterStamps={bind,migrate,renderSettings,calendar,flameHTML,flames,stamp,protect,open,img,book,resetMonth,changeMonth};
+function resetMonth(){month=day().slice(0,7);selectedDay=day();feedback='';}
+window.CharacterStamps={bind,migrate,renderSettings,calendar,flameHTML,flames,stamp,protect,open,img,book,resetMonth,changeMonth,chooseDay,reconcileTickets};
 })();
