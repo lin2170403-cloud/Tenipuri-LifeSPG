@@ -124,13 +124,13 @@ input,textarea,select{font-size:16px!important}
 </section><div class="char-subpane" data-charpage="date"><div class="panel"><div class="heading"><h2>デート</h2><span class="badge">準備中</span></div><p class="minor">デート資金はお財布でロック確保できます。デート企画・必要条件・専用ストーリーは次回実装します。</p><button class="btn secondary" data-tab="wallet" type="button">デート資金を確認する</button></div></div></section><section aria-label="ガチャ" class="section" id="page-gacha"><div class="page-head"><h2>ガチャ</h2><span class="page-mark">✦</span></div>
 <div class="segment-switch gacha-switch" role="tablist" aria-label="ガチャ選択">
 <button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="morning">朝の運試し</button>
-<button type="button" class="segment-btn active" role="tab" aria-selected="true" data-gacha-tab="reward">姫猫ご褒美</button>
-<button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="hokkaido">北海道ロマン</button></div>
+<button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="reward">姫猫ご褒美</button>
+<button type="button" class="segment-btn active" role="tab" aria-selected="true" data-gacha-tab="hokkaido">北海道ロマン</button></div>
 <div class="gacha-pane" data-gacha-pane="morning"><div class="panel gacha-card" id="morning-oracle-root" aria-label="観音霊籤・朝の運試し"></div></div>
-<div class="gacha-pane active" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
+<div class="gacha-pane" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
 <div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
 <div class="gacha-actions"><button class="ghost-link" data-page="exchange" type="button">引換所</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div></div></div>
-<div class="gacha-pane" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="カレンダーとタイムライン" class="section" id="page-timeline"><div id="timeline-root"></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
+<div class="gacha-pane active" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="カレンダーとタイムライン" class="section" id="page-timeline"><div id="timeline-root"></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
 <div class="segment-switch wallet-switch"><button class="segment-btn active" data-walletview="ledger" type="button">帳簿</button><button class="segment-btn" data-walletview="funds" type="button">ファンド</button></div>
 <div class="wallet-subpane active" id="wallet-ledger">
 <div class="panel"><div class="heading"><h2>収入・出費を記帳</h2><span class="badge">現金の記録</span></div>
@@ -220,6 +220,7 @@ input,textarea,select{font-size:16px!important}
 <script src="./hokkaido-gacha.js"></script>
 <script src="./morning-guanyin-data.js?v=20261015-1"></script>
 <script src="./morning-guanyin.js?v=20261015-1"></script>
+<script src="./gacha-navigation.js?v=20261015-10"></script>
 <script src="./character-stamps.js"></script>
 <script src="./app-settings.js?v=20261015-8"></script>
 <script src="./date-system.js?v=20261015-1"></script>
@@ -334,6 +335,7 @@ function selectTab(id){if(id==='shop'){id='chars';charPage='shop'}
  document.querySelectorAll('.app > .section').forEach(s=>s.classList.toggle('active',s.id==='page-'+id));
  switchCharPage(charPage);render();window.scrollTo(0,0)}
 function switchGachaPage(id){
+ if(window.GachaNavigation?.select(id))return;
  if(!['morning','reward','hokkaido'].includes(id))return;
  document.querySelectorAll('[data-gacha-tab]').forEach(b=>{
   const yes=b.dataset.gachaTab===id;
@@ -516,7 +518,7 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.GuanyinMorning.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
+function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);try{window.GuanyinMorning?.render(state)}catch(err){console.warn('朝の運試し表示をスキップ:',err)}window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
  const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
@@ -621,7 +623,7 @@ window.CharacterProfiles.bind(characterApi);
 window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
 window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
 window.DailyTimeline.bind({state:()=>state,save:()=>{persist();render()},toast});
-window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});window.GuanyinMorning.bind({state:()=>state,persist,render,toast,openPage});render();}
+window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});try{window.GuanyinMorning?.bind({state:()=>state,persist,render,toast,openPage})}catch(err){console.warn('朝の運試しの初期化に失敗:',err)}render();}
 bind();
 })();
 </script></body>
