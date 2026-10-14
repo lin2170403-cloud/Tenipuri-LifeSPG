@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
-const nowJST=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).replace(', ','T');
+const nowJST=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).replace(/[, ]+/,'T');
 const parts=(d)=>{const [y,m]=d.split('-').map(Number);return {first:new Date(Date.UTC(y,m-1,1)).getUTCDay(),days:new Date(Date.UTC(y,m,0)).getUTCDate()};};
 const nextMonth=(m,delta)=>{const [y,mon]=m.split('-').map(Number),v=new Date(Date.UTC(y,mon-1+delta,1));return v.toISOString().slice(0,7)};
 function migrate(s){if(!Array.isArray(s.timelinePosts))s.timelinePosts=[];s.timelinePosts=s.timelinePosts.filter(p=>p&&typeof p.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(p.date));}
@@ -30,7 +30,7 @@ function clean(html){
  return out.innerHTML;
 }
 function posts(s,day){return s.timelinePosts.filter(p=>p.date===day).sort((a,b)=>(a.time||'').localeCompare(b.time||'')||(a.created||'').localeCompare(b.created||''));}
-function visible(p){return (p.date+'T'+p.time)<=nowJST().slice(0,16);}
+function visible(p){return /^\d{4}-\d{2}-\d{2}$/.test(p.date)&&/^\d{2}:\d{2}$/.test(p.time)&&(p.date+'T'+p.time)<=nowJST().slice(0,16);}
 function render(s){
  const root=document.getElementById('timeline-root');if(!root)return;
  migrate(s);
@@ -43,16 +43,16 @@ function render(s){
  root.innerHTML='<div class="tl-wrap"><div class="tl-calendar"><div class="tl-month"><button data-tl-month="-1" type="button" aria-label="前の月">‹</button><strong>'+month.replace('-','年')+'月</strong><button data-tl-month="1" type="button" aria-label="次の月">›</button></div><div class="tl-week">'+['日','月','火','水','木','金','土'].map(d=>'<span>'+d+'</span>').join('')+'</div><div class="tl-days">'+grid+'</div></div>'+
  '<div class="tl-timeline"><div class="tl-timeline-head"><div><small>MY TIMELINE</small><h3>'+E(chosen)+' のタイムライン</h3></div><button type="button" class="tl-compose" data-tl-new>＋ 投稿する</button></div>'+
  (posts(s,chosen).map(p=>{
- const isReady=visible(p);
+ const isReady=visible(p),safeImages=(p.images||[]).filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
  return '<article class="tl-post '+(!isReady?'scheduled':'')+'"><div class="tl-post-head"><span>'+(isReady?'公開':'予約投稿')+' · '+E(p.time)+'</span><button type="button" data-tl-edit="'+E(p.id)+'">編集</button></div>'+
  (isReady?'<div class="tl-post-body">'+clean(p.html)+'</div>':'<p class="tl-waiting">設定した公開時刻になると内容が表示されます。編集からプレビューできます。</p>')+
- (isReady&&p.images?.length?'<div class="tl-images">'+p.images.map(src=>'<img alt="投稿画像" loading="lazy" src="'+src+'">').join('')+'</div>':'')+'</article>';
+ (isReady&&safeImages.length?'<div class="tl-images">'+safeImages.map(src=>'<img alt="投稿画像" loading="lazy" src="'+src+'">').join('')+'</div>':'')+'</article>';
  }).join('')||'<p class="tl-empty">まだ投稿がありません。カレンダーの「投稿する」から書いてみよう。</p>')+'</div></div>';
 }
 function openEditor(post){
  if(modal)modal.remove();
  editing=post?.id||null;
- activeImages=[...(post?.images||[])];
+ activeImages=[...(post?.images||[])].filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
  modal=document.createElement('div');modal.className='tl-modal';modal.innerHTML='<div class="tl-editor" role="dialog" aria-modal="true" aria-label="タイムライン投稿の編集"><header><strong>'+(post?'投稿を編集':'新しい投稿')+'</strong><button type="button" data-tl-close aria-label="閉じる">×</button></header><form id="tl-post-form"><div class="tl-editor-meta"><label>投稿日<input name="date" type="date" required value="'+E(post?.date||chosen)+'"></label><label>公開予定時刻<input name="time" type="time" required value="'+E(post?.time||nowJST().slice(11,16))+'"></label></div>'+
  '<div class="tl-toolbar" role="toolbar" aria-label="文字装飾"><button type="button" data-tl-command="bold" title="太字"><b>B</b></button><button type="button" data-tl-command="italic" title="斜体"><i>I</i></button><button type="button" data-tl-command="underline" title="下線"><u>U</u></button><button type="button" data-tl-command="strikeThrough" title="取消線"><s>S</s></button><label title="文字色">文字色<input type="color" id="tl-color" value="#7955a6"></label></div>'+
  '<div id="tl-content" contenteditable="true" role="textbox" aria-label="本文" aria-multiline="true" data-placeholder="今日の出来事や予定を書こう"></div>'+
