@@ -57,7 +57,7 @@ function openEditor(post){
  '<div class="tl-toolbar" role="toolbar" aria-label="文字装飾"><button type="button" data-tl-command="bold" title="太字"><b>B</b></button><button type="button" data-tl-command="italic" title="斜体"><i>I</i></button><button type="button" data-tl-command="underline" title="下線"><u>U</u></button><button type="button" data-tl-command="strikeThrough" title="取消線"><s>S</s></button><label title="文字色">文字色<input type="color" id="tl-color" value="#7955a6"></label><button type="button" data-tl-now title="現在時刻を本文に挿入">🕒 今の時間</button></div>'+
  '<div id="tl-content" contenteditable="true" role="textbox" aria-label="本文" aria-multiline="true" data-placeholder="今日の出来事や予定を書こう"></div>'+
  '<label class="tl-upload">🖼️ 画像を追加（最大4枚）<input type="file" id="tl-upload" accept="image/*" multiple></label><div id="tl-image-preview"></div>'+
- '<p class="tl-tip">設定時刻になるとタイムラインに公開されます。投稿内容は後から修正できます。</p>'+
+
  '<footer><button type="button" data-tl-close>キャンセル</button>'+(post?'<button type="button" data-tl-remove class="tl-danger">削除</button>':'')+'<button type="submit" class="tl-save">'+(post?'変更を保存':'投稿を予約・公開')+'</button></footer></form></div>';
  document.body.appendChild(modal);
  const area=modal.querySelector('#tl-content');
