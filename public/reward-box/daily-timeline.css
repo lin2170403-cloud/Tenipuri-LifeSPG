@@ -49,3 +49,16 @@
 .tl-editor footer .tl-save{background:#7854a5;color:#fff;border-color:#7854a5}
 .tl-editor footer .tl-danger{color:#ba6371}
 @media(max-width:430px){.tl-calendar,.tl-timeline{padding:10px}.tl-days,.tl-week{gap:3px}.tl-day{border-radius:9px}.tl-timeline-head h3{font-size:14px}#tl-post-form{padding:11px}.tl-editor-meta{gap:6px}.tl-editor-meta input{font-size:13px}}
+
+/* Four navigation entries, evenly distributed */
+.bottom-tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.hk-rates{grid-template-columns:repeat(6,minmax(0,1fr));margin:11px 0 9px}
+.hk-rates .rarity{padding:8px 2px}
+.hk-rates .rarity span{font-size:10px}
+.hk-rates .rarity.N b{color:#9098a6}
+.hk-prob-bar{height:12px;display:flex;overflow:hidden;border-radius:20px;margin-bottom:10px}
+.vdate-create-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.vdate-create-buttons button,.vdate-release{border:1px solid #e3d7ee;border-radius:9px;background:#f1eaf7;color:#745593;padding:9px;font-size:12px;font-weight:800}
+.vdate-release{font-size:11px;margin:5px 0}
+.vdate-create-buttons button:disabled{opacity:.45}
+@media(max-width:400px){.hk-rates{grid-template-columns:repeat(3,minmax(0,1fr))}.hk-rates .rarity span{font-size:12px}}
