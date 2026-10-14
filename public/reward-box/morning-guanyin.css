@@ -1,0 +1,72 @@
+/* The morning fortune occupies only the former disabled morning-gacha panel. */
+.gyn-main{display:flex;flex-direction:column;gap:14px;text-align:center;max-width:740px;margin:auto}
+.gyn-title{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;text-align:left}
+.gyn-title h2{font-size:18px}
+.gyn-kicker{font-size:10px;letter-spacing:.18em;font-weight:850;color:var(--theme-accent,#785ba5)}
+.gyn-status{font-size:11px;font-weight:700;border-radius:20px;padding:6px 10px;background:var(--theme-soft,#f2edfa);color:var(--theme-accent,#785ba5)}
+.gyn-ritual{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;
+ min-height:195px;padding:18px;border-radius:19px;background:radial-gradient(ellipse at 50% 0%,#fff9ed,var(--theme-soft,#f2edfa));
+ border:1px solid var(--theme-line,#e9dfea);overflow:hidden}
+.gyn-ritual p{color:#8a6b56;font-size:12px;letter-spacing:.07em}
+.gyn-tube{width:114px;height:112px;margin-top:12px;display:grid;place-items:center;position:relative;
+ border:3px solid #ab7f51;border-radius:23px 23px 36px 36px;background:linear-gradient(118deg,#deb68d,#bf874e 50%,#e2b989);
+ box-shadow:inset 10px 1px 18px #ffffff66,inset -8px -4px 15px #69452c33,0 9px 20px #5b331b33;
+ transform-origin:50% 100%}
+.gyn-tube:before{content:'';height:11px;border:2px solid #95693d;background:#9c663e;border-radius:70%;position:absolute;top:-7px;left:-3px;right:-3px}
+.gyn-sticks{position:absolute;top:-40px;left:6px;right:6px;font-size:27px;letter-spacing:9px;color:#986a35;font-weight:900;transform:rotate(4deg)}
+.gyn-emblem{border:2px solid #885c32;border-radius:50%;width:62px;height:62px;background:#f2dfba;color:#7b4127;display:grid;place-items:center;
+ font-size:18px;font-family:serif;font-weight:900}
+.gyn-ritual.shaking .gyn-tube{animation:gyn-shake .23s ease-in-out 4}
+@keyframes gyn-shake{0%,100%{transform:rotate(-6deg) translateX(-3px)}50%{transform:rotate(6deg) translateX(3px)}}
+.gyn-draw{min-height:48px;padding:12px 20px;border:0;border-radius:15px;
+ background:var(--theme-accent,#785ba5);color:white;font-size:15px;font-weight:850;letter-spacing:.08em}
+.gyn-draw:disabled{opacity:.55}
+.gyn-empty{font-size:12px;color:var(--muted,#767483);background:#faf8fc;border-radius:11px;padding:15px}
+.gyn-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.gyn-actions button{border:1px solid var(--theme-line,#ddd4e9);border-radius:12px;min-height:39px;
+ background:var(--theme-soft,#f2edfa);color:var(--theme-accent,#785ba5);font-size:12px;font-weight:800}
+.gyn-today-label{font-size:12px;color:var(--theme-accent,#785ba5);font-weight:850;text-align:center;margin-top:6px}
+.gyn-lot{border:1px solid var(--theme-line,#dfd4e7);border-radius:17px;padding:18px 17px;background:#fff;text-align:left;box-shadow:0 3px 17px #402c4612}
+.gyn-lot-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:13px}
+.gyn-lot-number{font-size:20px;letter-spacing:.15em;font-family:serif;font-weight:900;color:var(--theme-accent,#785ba5)}
+.gyn-level{font-size:11px;font-weight:900;border-radius:19px;padding:5px 10px;white-space:nowrap}
+.gyn-level.excellent{background:#fff0d0;color:#9e622d}.gyn-level.good{background:#f8e6ec;color:#a34a6c}
+.gyn-level.steady{background:#e9f3f6;color:#3c788a}.gyn-level.caution{background:#eff0f3;color:#72717f}
+.gyn-lot h3{font-size:17px;margin:2px 0 11px;font-weight:850}
+.gyn-verse{font-family:"Yu Mincho","Hiragino Mincho ProN","Songti SC",serif;white-space:pre-wrap;line-height:2;
+ font-size:clamp(15px,2.8vw,18px);letter-spacing:.055em;color:#3d3446;text-align:center;
+ background:linear-gradient(110deg,#fffaf4,#fff);padding:15px 10px;border-radius:13px;border:1px solid #f1e8dc}
+.gyn-reading{margin-top:14px}.gyn-reading b{font-size:12px;color:var(--theme-accent,#785ba5)}
+.gyn-reading p{font-size:13px;margin-top:5px;line-height:1.8;color:#4b4751}
+.gyn-reflection{border-left:3px solid var(--theme-accent,#785ba5);padding:8px 11px;
+ background:var(--theme-soft,#f2edfa);font-size:12px;line-height:1.6;color:#57515f;margin-top:13px}
+.gyn-disclaimer{display:block;font-size:10px;color:#8b8292;margin-top:14px;line-height:1.6}
+.gyn-catalogue-tools{display:grid;grid-template-columns:1.7fr 1fr;gap:10px;margin:8px 0 12px}
+.gyn-catalogue-tools label{display:block;font-size:11px;font-weight:800;color:#82758c}
+.gyn-catalogue-tools input,.gyn-catalogue-tools select{display:block;width:100%;padding:10px;
+ border:1px solid var(--theme-line,#dcd1e5);border-radius:10px;background:#fff;font-size:14px;margin-top:5px}
+.gyn-count{font-size:11px;color:var(--muted,#858090);margin:8px 0}
+.gyn-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:340px;overflow-y:auto;
+ padding:4px;border-radius:10px;overscroll-behavior:contain}
+.gyn-list-item{border:1px solid var(--theme-line,#e5dbea);background:#fff;border-radius:10px;
+ display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px;text-align:left;min-width:0}
+.gyn-list-item span:first-child{font-size:11px;font-weight:900;color:var(--theme-accent,#785ba5)}
+.gyn-list-item b{font-size:12px;flex:1;min-width:55%;overflow-wrap:anywhere}
+.gyn-list-item .gyn-level{font-size:10px;padding:3px 6px}
+.gyn-list-item.chosen{background:var(--theme-soft,#f2edfa);border:2px solid var(--theme-accent,#785ba5)}
+#gyn-selected-detail{margin-top:15px}
+.gyn-license{margin:13px 0 0;font-size:10px;color:var(--muted,#777);line-height:1.6}
+.gyn-license a{color:var(--theme-accent,#785ba5);text-decoration:underline}
+.gyn-history-item{border:1px solid var(--theme-line,#dcd1e5);border-radius:12px;padding:0 12px;margin:9px 0;background:#fff}
+.gyn-history-item summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px 1px;list-style:none}
+.gyn-history-item summary::-webkit-details-marker{display:none}
+.gyn-history-item summary span{font-size:11px;color:#797286}.gyn-history-item summary b{font-size:13px;flex:1}
+.gyn-history-item .gyn-lot{box-shadow:none;margin-bottom:12px}
+.gyn-lot.compact{padding:13px}.gyn-lot.compact .gyn-verse{font-size:15px}
+@media(max-width:480px){
+ .gyn-ritual{min-height:170px}.gyn-lot{padding:13px}.gyn-title h2{font-size:17px}
+ .gyn-catalogue-tools{grid-template-columns:minmax(0,1fr) 125px;gap:6px}
+ .gyn-list{grid-template-columns:minmax(0,1fr)}
+ .gyn-list-item b{min-width:30%}
+}
+@media(prefers-reduced-motion:reduce){.gyn-ritual.shaking .gyn-tube{animation:none}}

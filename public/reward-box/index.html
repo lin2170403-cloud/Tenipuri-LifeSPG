@@ -101,6 +101,7 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./vnext.css">
 <link rel="stylesheet" href="./daily-timeline.css?v=20261015-1">
 <link rel="stylesheet" href="./ui-refinement.css?v=20261015-8">
+<link rel="stylesheet" href="./morning-guanyin.css?v=20261015-1">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -125,9 +126,7 @@ input,textarea,select{font-size:16px!important}
 <button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="morning">朝の運試し</button>
 <button type="button" class="segment-btn active" role="tab" aria-selected="true" data-gacha-tab="reward">姫猫ご褒美</button>
 <button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="hokkaido">北海道ロマン</button></div>
-<div class="gacha-pane" data-gacha-pane="morning"><div class="panel gacha-card"><div class="heading"><h2>🌅 朝の運試し</h2><span class="badge">9:00前・1日1回</span></div>
-<p class="minor" id="morning-status">景品内容の設定待ち</p><button class="btn secondary" disabled id="morning-luck" type="button">景品設定後に開放</button>
-<div class="gacha-actions"><button class="ghost-link" data-page="morning-exchange" type="button">引換所</button><button class="ghost-link" data-page="morning-history" type="button">抽選履歴</button></div></div></div>
+<div class="gacha-pane" data-gacha-pane="morning"><div class="panel gacha-card" id="morning-oracle-root" aria-label="観音霊籤・朝の運試し"></div></div>
 <div class="gacha-pane active" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
 <div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
 <div class="gacha-actions"><button class="ghost-link" data-page="exchange" type="button">引換所</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div></div></div>
@@ -202,7 +201,7 @@ input,textarea,select{font-size:16px!important}
  <div class="content"><div class="list list-scroll" id="pending-list"></div></div></details></div>
  <div id="drawer-voucher-slot"><details class="expander"><summary>🎫 出費チケット <span class="badge" id="voucher-count">0件</span></summary>
  <div class="content"><div class="list list-scroll" id="voucher-list"></div></div></details></div>
- </div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
+ </div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">観音霊籤の全100籤から、毎朝9:00より前に1日1回、等確率（各1%）で引けます。結果は履歴に保存されます。金銭・育成報酬はありません。占いは文化・娯楽上の参考で、現実の判断を決めるものではありません。<a href="./THIRD_PARTY_GUANYIN_LICENSE.txt" target="_blank" rel="noopener noreferrer">出典・非商用ライセンス</a>。</p></div>
 
 <div class="panel"><h3>✈️ 北海道ロマン：提供割合・ルール</h3>
 <div class="rarities hk-rates"><div class="rarity MR"><b>MR</b><span>0.60%</span></div><div class="rarity UR"><b>UR</b><span>3.40%</span></div><div class="rarity SSR"><b>SSR</b><span>11.00%</span></div><div class="rarity SR"><b>SR</b><span>25.00%</span></div><div class="rarity R"><b>R</b><span>30.00%</span></div><div class="rarity N"><b>N</b><span>30.00%</span></div></div><div class="pools hk-prob-bar"><span style="width:0.6%;background:#db659f"></span><span style="width:3.4%;background:#9370d4"></span><span style="width:11%;background:#d49d40"></span><span style="width:25%;background:#648dc9"></span><span style="width:30%;background:#6b9bbb"></span><span style="width:30%;background:#9098a6"></span></div>
@@ -211,14 +210,16 @@ input,textarea,select{font-size:16px!important}
 <p class="minor">15万円貯金達成で鳳長太郎MR確定。重複カードから交換メダルを獲得できます。選択券・メダルは北海道の「引換所」で使用します。MRは交換対象外です。</p></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
 <div id="content-basic"><div class="panel" id="app-basic-settings"></div></div><div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
-<div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>🌅 朝の運試し・引換所</h3><p class="minor">準備中</p></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
+<div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>📜 観音霊籤・百籤図鑑</h3><div id="gyn-catalogue-root"></div></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
-<div id="content-morning-history"><div class="panel"><h3>朝くじ履歴</h3><div id="morning-history-list"></div></div></div>
+<div id="content-morning-history"><div class="panel"><h3>🌅 観音霊籤・抽籤履歴</h3><div id="morning-history-list"></div></div></div>
 <div id="content-story-history"><div class="panel"><h3>北海道ミニストーリー履歴</h3><div id="story-history-list"></div></div></div>
 </div><script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" async></script>
 <script src="./hokkaido-reveal.js"></script>
 <script src="./hokkaido-gacha.js"></script>
+<script src="./morning-guanyin-data.js?v=20261015-1"></script>
+<script src="./morning-guanyin.js?v=20261015-1"></script>
 <script src="./character-stamps.js"></script>
 <script src="./app-settings.js?v=20261015-8"></script>
 <script src="./date-system.js?v=20261015-1"></script>
@@ -344,7 +345,7 @@ function setWalletView(view){walletView=view;document.querySelectorAll('[data-wa
 function setIntakeView(view){intakeView=view;document.querySelectorAll('[data-intake]').forEach(x=>x.classList.toggle('active',x.dataset.intake===view));document.querySelectorAll('.intake-view').forEach(x=>x.classList.toggle('active',x.id==='intake-'+view))}
 function openDrawer(id){closeDrawers();document.getElementById(id).classList.add('open');document.getElementById(id).setAttribute('aria-hidden','false');$('drawer-backdrop').hidden=false;document.body.style.overflow='hidden'}
 function closeDrawers(){document.querySelectorAll('.side-drawer').forEach(x=>{x.classList.remove('open');x.setAttribute('aria-hidden','true')});$('drawer-backdrop').hidden=true;document.body.style.overflow=''}
-const TITLES={inventory:'持ち物',manual:'使い方・説明書',basic:'基礎設定',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',exchange:'姫猫ご褒美・引換所','morning-exchange':'朝の運試し・引換所','hk-exchange':'北海道ロマン・引換所','gacha-history':'ガチャ履歴','morning-history':'朝くじ履歴','story-history':'北海道ストーリー履歴'};
+const TITLES={inventory:'持ち物',manual:'使い方・説明書',basic:'基礎設定',settings:'キャラとスタンプ帳設定',backup:'データバックアップ',exchange:'姫猫ご褒美・引換所','morning-exchange':'観音霊籤・百籤図鑑','hk-exchange':'北海道ロマン・引換所','gacha-history':'ガチャ履歴','morning-history':'観音霊籤・抽籤履歴','story-history':'北海道ストーリー履歴'};
 function openPage(id){if(!TITLES[id])return;closeDrawers();activeSubpage=id;$('drawer-page-title').textContent=TITLES[id];const container=$('drawer-page-content'),section=$('content-'+id);container.replaceChildren(section);$('drawer-page').classList.add('open');$('drawer-page').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';render()}
 function closePage(){if(!activeSubpage)return;const el=$('content-'+activeSubpage);if(el)$('subpage-repository').appendChild(el);activeSubpage='';$('drawer-page').classList.remove('open');$('drawer-page').setAttribute('aria-hidden','true');document.body.style.overflow=''}
 function openSheet(id){if(id==='training')id='intake';
@@ -515,7 +516,7 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
+function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.GuanyinMorning.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
  const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
@@ -620,7 +621,7 @@ window.CharacterProfiles.bind(characterApi);
 window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
 window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
 window.DailyTimeline.bind({state:()=>state,save:()=>{persist();render()},toast});
-window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
+window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});window.GuanyinMorning.bind({state:()=>state,persist,render,toast,openPage});render();}
 bind();
 })();
 </script></body>
