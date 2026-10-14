@@ -57,7 +57,7 @@ function gifts(s){
 function detail(s){
  const t=s.characters[id],cap=[150,300,550,900,1200,1500][t.stage-1];
  const pane=tab==='skills'?skillPane():tab==='radar'?radarPane():
- `<div class="cp-panel"><h3>💗 デート</h3><p>${S().flames(s,id)?'🔥 デート条件達成':'火がすべて消えているためデート不可'}</p><p class="cp-notice">デート内容は準備中</p></div>`;
+ (S().flames(s,id)?window.DateSystem.render(s,id):'<div class="cp-panel"><h3>💗 デート</h3><p>炎がすべて消えているため、デートはできません。</p></div>');
  return `<button class="cp-back" data-cp-back>‹ 12人の王子たち</button>
  <div class="cp-profile"><div class="cp-photo">${avatar(s,id)}</div><div class="cp-info"><h2>${E(person().name)}</h2>
  <b>第${t.stage}段階 / 6</b>${S().flameHTML(s,id)}
@@ -146,5 +146,5 @@ function bind(api) {
  root.addEventListener('click',onClick);peek.addEventListener('click',onClick);
  render();
 }
-window.CharacterProfiles={bind,render};
+window.CharacterProfiles={bind,render,current:()=>id};
 })();
