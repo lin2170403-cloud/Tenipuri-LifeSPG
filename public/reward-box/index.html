@@ -97,7 +97,8 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./hokkaido-reveal.css"/>
 <link rel="stylesheet" href="./gacha-refinement.css"/>
 <link rel="stylesheet" href="./character-pages.css">
-<link rel="stylesheet" href="./fund-and-peek.css?v=20261013-5">
+<link rel="stylesheet" href="./fund-and-peek.css?v=20261015">
+<link rel="stylesheet" href="./vnext.css">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -191,14 +192,14 @@ input,textarea,select{font-size:16px!important}
  <div class="field note-field"><label for="date-note">備考（任意）</label><textarea id="date-note" rows="2" maxlength="300"></textarea></div>
  <button type="submit" class="btn" style="width:100%;margin-top:12px">💗 デート資金を入金</button></form>
  <p class="minor" style="margin-top:10px">資金を確保した後の取り消しはできません。デートへの出費はお財布の帳簿から記録できます。</p>
-</div></section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
-<div class="panel"><h3>🐱 姫猫ご褒美：ルール</h3><p class="minor">単発150💎・10連＋1回1,500💎。提供割合は直近の抽選履歴・景品残数と救済条件などで変化します。上記の提供割合と景品一覧を確認してください。</p></div>
+</div></section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div class="panel"><h3>🎟️ キャラ専用・一回休み券</h3><div id="stamp-tickets-list"></div></div><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
+
 <div class="panel"><h3>✈️ 北海道ロマン：提供割合・ルール</h3>
 <div class="manual-grid"><span>MR</span><b>0.6%</b><span>UR</span><b>3.4%</b><span>SSR</span><b>11%</b><span>SR</span><b>25%</b><span>R</span><b>30%</b><span>N</span><b>30%</b></div>
 <p class="minor">全132種類の単一ガチャ。北海道貯金10円につき北海道ジュエル1個、100個で1回、1,000個で10連。貯金した現金は減りません。</p>
 <p class="minor">SSR以上が10回連続で出なければ10回目にSSR以上、UR以上が40回連続で出なければ40回目にUR以上確定。単発・10連共通、各レア内でカードを均等抽選します。</p>
 <p class="minor">15万円貯金達成で鳳長太郎MR確定。重複カードから交換メダルを獲得できます。選択券・メダルは北海道の「引換所」で使用します。MRは交換対象外です。</p></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
-<div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
+<div id="content-settings"><div class="panel" id="app-basic-settings"></div><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
 <div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><p class="minor">同じレアリティの交換券で景品を交換します。交換できない景品も図鑑で確認できます。</p><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>🌅 朝の運試し・引換所</h3><p class="minor">このガチャは景品が未設定です。景品を決めたら図鑑と引換所を追加します。</p></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
@@ -209,7 +210,9 @@ input,textarea,select{font-size:16px!important}
 <script src="./hokkaido-reveal.js"></script>
 <script src="./hokkaido-gacha.js"></script>
 <script src="./character-stamps.js"></script>
-<script src="./character-profiles.js?v=20261013-5"></script>
+<script src="./app-settings.js"></script>
+<script src="./date-system.js"></script>
+<script src="./character-profiles.js?v=20261015"></script>
 <script>
 (()=>{'use strict';
 const STORAGE='hime-reward-v2', OLD_STORAGE='hime-reward-v1';
@@ -259,7 +262,7 @@ function $(id){return document.getElementById(id)}
 function esc(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(n){return Number(n||0).toLocaleString('ja-JP')+'円'}
 function fmt(n){return Number(n||0).toLocaleString('ja-JP')}
-function today(){const o={};new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).forEach(p=>o[p.type]=p.value);return `${o.year}-${o.month}-${o.day}`}
+function today(){if(window.AppSettings&&state)return window.AppSettings.dayKey(new Date(),state.appSettings);const o={};new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).forEach(p=>o[p.type]=p.value);return `${o.year}-${o.month}-${o.day}`}
 function timestamp(){return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date())}
 function int(v){const n=Number(v);return Number.isSafeInteger(n)&&n>=0?n:null}
 function emptyCharacter(){return {attrs:Array(15).fill(0),stage:1,affinity:0,skills:[]}}
@@ -298,6 +301,9 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
   s.charStamps=raw.charStamps&&typeof raw.charStamps==='object'?raw.charStamps:{};
   s.itemStock=raw.itemStock&&typeof raw.itemStock==='object'?raw.itemStock:{};
   s.protectionDays=int(raw.protectionDays)||0;
+  s.stampTickets=raw.stampTickets&&typeof raw.stampTickets==='object'?raw.stampTickets:{};
+  s.dateProfiles=raw.dateProfiles&&typeof raw.dateProfiles==='object'?raw.dateProfiles:{};
+  s.appSettings=raw.appSettings&&typeof raw.appSettings==='object'?raw.appSettings:{};
   s.hokkaidoGacha=raw.hokkaidoGacha||null;
   if(!raw.uiVersion||raw.uiVersion<4){s.dateLocked+=(s.funds.date||0);s.funds.date=0;}
   s.vouchers.forEach((v,i)=>{if(!v.uid)v.uid='legacy-'+i+'-'+String(v.draw||0);if(!Number.isFinite(v.used))v.used=0});
@@ -305,7 +311,7 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
 function readState(){const raw=localStorage.getItem(STORAGE)||localStorage.getItem(OLD_STORAGE);if(!raw)return defaultState();try{return migrate(JSON.parse(raw))}catch(e){alert('記録を読み込めません。既存データは保護されています。\n'+e.message);throw e}}
 let state=readState(),activeTab='chars',selectedChar='niou',shopChar='niou',shopTab='special',attrGroup='physical',fundSign='add',toastTimer=null;
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
-window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);persist();
+window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);persist();
 function log(kind,title,note=''){state.events.unshift({kind,title,note,at:timestamp()});state.events.length=Math.min(state.events.length,1000)}
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
 let walletView='ledger', intakeView='training', charView='growth',charPage='growth',activeSubpage='',activeSheet='';
@@ -378,7 +384,7 @@ function radar(c,start,end){const s=state.characters[c.id],cx=67,cy=63,r=37,N=5;
  return `<svg viewBox="0 0 134 128" role="img" aria-label="5属性の現状と目標">${out}</svg>`}
 function pendingCredit(key,d=today()){return state.fundCredits.filter(x=>x.key===key&&x.date>=d).reduce((a,x)=>a+(x.amount||0),0)}
 function availableFund(key,d=today()){return Math.max(0,(state.funds[key]||0)-pendingCredit(key,d))}
-function availableDate(d=today()){return Math.max(0,state.dateLocked-state.dateCredits.filter(x=>x.date>=d).reduce((a,x)=>a+x.amount,0))}
+function availableDate(d=today()){return Math.max(0,state.dateLocked-state.dateCredits.filter(x=>x.date>=d).reduce((a,x)=>a+x.amount,0)-window.DateSystem.allocated(state))}
 function todayLivingSpent(d=today()){return state.ledger.filter(x=>x.type==='expense'&&x.source==='living'&&x.date===d).reduce((a,x)=>a+x.amount,0)}
 function fmtTimeDate(d){return String(d||'').slice(5).replace('-','/')} 
 function renderLedgerExtra(){const src=$('ledger-source').value,t=$('ledger-type').value,cont=$('ledger-extra');$('ledger-source-field').style.display=t==='income'?'none':'';
@@ -496,7 +502,8 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state)}
+function render(){window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
+ const st=$('stamp-tickets-list');if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
   document.querySelectorAll('[data-walletview]').forEach(b=>b.addEventListener('click',()=>setWalletView(b.dataset.walletview)));document.querySelectorAll('[data-charpage].segment-btn').forEach(b=>b.addEventListener('click',()=>switchCharPage(b.dataset.charpage)));
@@ -597,6 +604,8 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
 };
 window.CharacterStamps.bind({getState:()=>state,chars:CHARS,toast,log,save:characterApi.save,openSettings:characterApi.openSettings});
 window.CharacterProfiles.bind(characterApi);
+window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
+window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
 window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
 bind();
 })();
