@@ -5,7 +5,7 @@ const nowJST=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'nu
 const parts=(d)=>{const [y,m]=d.split('-').map(Number);return {first:new Date(Date.UTC(y,m-1,1)).getUTCDay(),days:new Date(Date.UTC(y,m,0)).getUTCDate()};};
 const nextMonth=(m,delta)=>{const [y,mon]=m.split('-').map(Number),v=new Date(Date.UTC(y,mon-1+delta,1));return v.toISOString().slice(0,7)};
 function migrate(s){if(!Array.isArray(s.timelinePosts))s.timelinePosts=[];s.timelinePosts=s.timelinePosts.filter(p=>p&&typeof p.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(p.date));}
-let api=null,chosen=nowJST().slice(0,10),month=chosen.slice(0,7),modal=null,activeImages=[],editing=null;
+let api=null,chosen=nowJST().slice(0,10),month=chosen.slice(0,7),modal=null,activeImages=[],editing=null,pendingImages=0,lastRange=null;
 function clean(html){
  const input=document.createElement('template');input.innerHTML=String(html||'').slice(0,100000);
  const allowed=new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','SPAN','DIV','P','BR']);
@@ -51,7 +51,7 @@ function render(s){
 }
 function openEditor(post){
  if(modal)modal.remove();
- editing=post?.id||null;
+ editing=post?.id||null;pendingImages=0;lastRange=null;
  activeImages=[...(post?.images||[])].filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
  modal=document.createElement('div');modal.className='tl-modal';modal.innerHTML='<div class="tl-editor" role="dialog" aria-modal="true" aria-label="タイムライン投稿の編集"><header><strong>'+(post?'投稿を編集':'新しい投稿')+'</strong><button type="button" data-tl-close aria-label="閉じる">×</button></header><form id="tl-post-form"><div class="tl-editor-meta"><label>投稿日<input name="date" type="date" required value="'+E(post?.date||chosen)+'"></label><label>公開予定時刻<input name="time" type="time" required value="'+E(post?.time||nowJST().slice(11,16))+'"></label></div>'+
  '<div class="tl-toolbar" role="toolbar" aria-label="文字装飾"><button type="button" data-tl-command="bold" title="太字"><b>B</b></button><button type="button" data-tl-command="italic" title="斜体"><i>I</i></button><button type="button" data-tl-command="underline" title="下線"><u>U</u></button><button type="button" data-tl-command="strikeThrough" title="取消線"><s>S</s></button><label title="文字色">文字色<input type="color" id="tl-color" value="#7955a6"></label></div>'+
@@ -60,14 +60,26 @@ function openEditor(post){
  '<p class="tl-tip">設定時刻になるとタイムラインに公開されます。投稿内容は後から修正できます。</p>'+
  '<footer><button type="button" data-tl-close>キャンセル</button>'+(post?'<button type="button" data-tl-remove class="tl-danger">削除</button>':'')+'<button type="submit" class="tl-save">'+(post?'変更を保存':'投稿を予約・公開')+'</button></footer></form></div>';
  document.body.appendChild(modal);
- modal.querySelector('#tl-content').innerHTML=clean(post?.html||'');
+ const area=modal.querySelector('#tl-content');
+ area.innerHTML=clean(post?.html||'');
+ area.addEventListener('keyup',()=>recordSelection(area));
+ area.addEventListener('mouseup',()=>recordSelection(area));
+ area.addEventListener('touchend',()=>recordSelection(area));
+ function recordSelection(node){
+  const sel=window.getSelection();if(!sel?.rangeCount)return;
+  const range=sel.getRangeAt(0);if(node.contains(range.commonAncestorContainer))lastRange=range.cloneRange();
+ }
+ function restore(){
+  area.focus();
+  if(lastRange){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(lastRange);}
+ }
  preview();
  modal.querySelectorAll('[data-tl-command]').forEach(b=>b.addEventListener('mousedown',e=>e.preventDefault()));
  modal.querySelectorAll('[data-tl-command]').forEach(b=>b.addEventListener('click',()=>{
-  modal.querySelector('#tl-content').focus();document.execCommand(b.dataset.tlCommand,false,null);
+  restore();document.execCommand(b.dataset.tlCommand,false,null);recordSelection(area);
  }));
  modal.querySelector('#tl-color').addEventListener('input',e=>{
-  modal.querySelector('#tl-content').focus();document.execCommand('foreColor',false,e.target.value);
+  restore();document.execCommand('foreColor',false,e.target.value);recordSelection(area);
  });
  modal.querySelector('#tl-upload').addEventListener('change',e=>loadFiles([...e.target.files]));
  modal.addEventListener('click',e=>{
@@ -81,6 +93,7 @@ function openEditor(post){
  });
  modal.querySelector('#tl-post-form').addEventListener('submit',e=>{
   e.preventDefault();
+  if(pendingImages)return api.toast('画像の読み込みが終わるまでお待ちください');
   const s=api.state(),date=e.target.elements.date.value,time=e.target.elements.time.value,html=clean(modal.querySelector('#tl-content').innerHTML);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))return api.toast('日時を確認してください');
   if(!html.replace(/<[^>]+>/g,'').trim()&&!activeImages.length)return api.toast('本文か画像を追加してください');
@@ -102,15 +115,16 @@ function loadFiles(files){
  const valid=files.filter(f=>f.type.startsWith('image/')).slice(0,Math.max(0,4-activeImages.length));
  for(const f of valid){
   if(f.size>10*1024*1024){api.toast('10MB以下の画像を選んでください');continue}
+  pendingImages++;
   const reader=new FileReader();
   reader.onload=()=>{
    const image=new Image();image.onload=()=>{
     const scale=Math.min(1,850/Math.max(image.width,image.height));
     const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
     canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
-    if(activeImages.length<4){activeImages.push(canvas.toDataURL('image/jpeg',0.67));preview();}
-   };image.onerror=()=>api.toast('画像を読み込めません');image.src=reader.result;
-  };reader.readAsDataURL(f);
+    if(activeImages.length<4){activeImages.push(canvas.toDataURL('image/jpeg',0.67));preview();}pendingImages--;
+   };image.onerror=()=>{pendingImages--;api.toast('画像を読み込めません')};image.src=reader.result;
+  };reader.onerror=()=>{pendingImages--;api.toast('画像を読み込めません')};reader.readAsDataURL(f);
  }
 }
 function bind(context){
