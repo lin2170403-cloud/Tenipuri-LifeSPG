@@ -38,7 +38,7 @@ function points(s) {
  const next=ch.levels[i][Math.min(t.stage,5)],max=Math.max(0,Math.ceil((cap-t.attrs[i])/factor)),available=Math.min(max,s.resources[g[0]]+s.resources.base);
  return `<div class="cp-panel"><h3>${E(A.ATTR[i])}にポイントを投入</h3><p>現在 ${F(t.attrs[i])} / 次段階 ${next} / 最終 ${cap} · 所持から投入可能 ${available}pt</p>
  <p>${E(g[1])} ${F(s.resources[g[0]])} ＋ 共通 ${F(s.resources.base)}</p>
- <form id="cp-invest"><input type="number" name="amount" min="1" max="${available}" required inputmode="numeric"><button class="cp-primary" ${max?'':'disabled'}>投入</button></form></div>`;
+ <form id="cp-invest"><input type="number" name="amount" min="1" max="${available}" required inputmode="numeric"><button class="cp-primary" ${available?'':'disabled'}>投入</button></form></div>`;
 }
 function shop(s){
  const list=A.GIFTS.filter(g=>g.type===goodsTab);
@@ -78,7 +78,7 @@ function modalContent(s){
 function closeModal(){view='detail';render();}
 function modalRender(s){
  if(!peek)return;
- const open=Boolean(id&&view!=='detail');
+ const open=Boolean((id||view==='shop')&&view!=='detail');
  if(!open){const wasOpen=peek.classList.contains('open');peek.innerHTML='';peek.classList.remove('open');peek.setAttribute('aria-hidden','true');if(wasOpen)document.body.style.overflow=oldOverflow;return;}
  if(!peek.classList.contains('open'))oldOverflow=document.body.style.overflow;
  peek.innerHTML=`<div class="cp-peek-scrim" data-cp-peek-close></div>
@@ -113,7 +113,7 @@ function bind(api) {
  if(b.hasAttribute('data-cp-back')){id=null;view='detail';render();return;}
  if(b.hasAttribute('data-cp-return')){view='detail';render();return;}
  if(b.dataset.cpTab){tab=b.dataset.cpTab;render();return;}
- if(b.hasAttribute('data-cp-shop')){if(!id)id=A.chars[0].id;view='shop';render();return;}
+ if(b.hasAttribute('data-cp-shop')){view='shop';render();return;}
  if(b.hasAttribute('data-cp-gift')){view='gifts';render();return;}
  if(b.hasAttribute('data-cp-open-book')){S().resetMonth();view='book';render();return;}
  if(b.dataset.cpDate){S().chooseDay(b.dataset.cpDate);render();return;}
@@ -127,7 +127,7 @@ function bind(api) {
  if(b.dataset.cpGoodsTab){goodsTab=b.dataset.cpGoodsTab;render();return;}
  if(b.dataset.cpBuy){
   const g=A.GIFTS.find(x=>x.id===b.dataset.cpBuy);if(!g||s.resources.coins<g.price)return A.toast('残高が足りません');
-  if(g.type!=='food'&&s.gifts[id]?.includes(g.id))return A.toast('贈呈済みです');
+  if(id&&g.type!=='food'&&s.gifts[id]?.includes(g.id))return A.toast('贈呈済みです');
   if(!window.confirm('「'+g.name+'」を🐱'+g.price+'で購入しますか？'))return;
   s.resources.coins-=g.price;s.itemStock[g.id]=(s.itemStock[g.id]||0)+1;
   A.log('purchase','購入 '+g.name,'🐱−'+g.price);A.commit();A.toast('購入して持ち物に追加しました');return;
