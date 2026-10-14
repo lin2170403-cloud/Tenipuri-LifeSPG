@@ -54,6 +54,12 @@ document.addEventListener('pointerdown',event=>{
  event.preventDefault();
  open(select);
 },true);
+document.addEventListener('click',event=>{
+ const select=event.target.closest?.('select');
+ if(!select||select.disabled||select.multiple)return;
+ event.preventDefault();
+ if(!current)open(select);
+},true);
 document.addEventListener('keydown',event=>{
  if(event.target?.matches('select')&&(event.key==='Enter'||event.key===' ')){
   event.preventDefault();open(event.target);
