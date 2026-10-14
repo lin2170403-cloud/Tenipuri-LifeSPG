@@ -74,7 +74,7 @@ function apply(s){
 function render(s){
  const target=document.getElementById('app-basic-settings');if(!target)return;
  const x=sane(s),names={lavender:'Lavender',sakura:'Sakura',mint:'Mint',sky:'Sky',neutral:'Neutral'};
- target.innerHTML='<h3>⚙ 基礎設定</h3>'+
+ target.innerHTML=
  '<div class="basic-field"><label>テーマカラー</label><div class="basic-themes" role="group" aria-label="テーマカラー">'+Object.keys(COLORS).map(k=>
  '<button type="button" data-basic-theme="'+k+'" class="'+(k===x.theme?'chosen':'')+'" aria-pressed="'+(k===x.theme)+'" style="--sample:'+COLORS[k][0]+'"><span class="theme-dot"></span><small>'+names[k]+'</small></button>'
  ).join('')+'</div></div>'+
