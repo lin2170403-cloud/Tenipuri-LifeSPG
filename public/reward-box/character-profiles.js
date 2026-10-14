@@ -50,7 +50,7 @@ function radarPane(){
 }
 function shop(s){
  const list=A.GIFTS.filter(g=>g.type===goodsTab);
- return `<div class="cp-panel"><div class="cp-shop-balance">🐱 所持ニャンコイン <b>${F(s.resources.coins)}</b></div><p>購入専用 · 贈呈は各キャラ画面から行います。</p>
+ return `<div class="cp-panel"><div class="cp-shop-balance">🐱 所持ニャンコイン <b>${F(s.resources.coins)}</b></div>
  <div class="cp-shop-tabs">${[['special','スペシャル'],['food','フード'],['fashion','ファッション']].map(([k,v])=>`<button data-cp-goods-tab="${k}" class="${goodsTab===k?'active':''}">${v}</button>`).join('')}</div>
  ${list.map(g=>`<div class="cp-good"><div><b>${E(g.name)}</b><small>🐱${F(g.price)} · 所持 ${s.itemStock[g.id]||0}</small></div>
  <button data-cp-buy="${g.id}" ${s.resources.coins<g.price||g.type!=='food'&&s.gifts[id]?.includes(g.id)?'disabled':''}>購入</button></div>`).join('')}</div>`;
