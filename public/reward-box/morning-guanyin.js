@@ -10,7 +10,7 @@ const clock=(date=new Date())=>{const p=datePart(date);return {date:p.year+'-'+p
 const record=(state,date)=>[...(state.morningHistory||[])].find(x=>x?.kind==='guanyin100'&&x.date===date);
 const allRecords=state=>(state.morningHistory||[]).filter(x=>x?.kind==='guanyin100'&&Number.isInteger(x.number)&&x.number>=1&&x.number<=100);
 const lot=n=>LOTS.find(x=>x.n===Number(n))||null;
-const randomNo=()=>{if(window.crypto?.getRandomValues){const buf=new Uint32Array(1),limit=Math.floor(4294967296/100)*100;let value;do{crypto.getRandomValues(buf);value=buf[0]}while(value>=limit);return (value%100)+1;}return Math.floor(Math.random()*100)+1;};
+const randomNo=()=>{if(window.crypto?.getRandomValues){const buf=new Uint32Array(1),limit=Math.floor(4294967296/100)*100;let value;do{window.crypto.getRandomValues(buf);value=buf[0]}while(value>=limit);return (value%100)+1;}return Math.floor(Math.random()*100)+1;};
 const stampDate=r=>r?.date?escape(r.date)+(r.at?' '+escape(r.at):''):'';
 let api=null,activeNumber=null,query='',filter='all',busy=false;
 function valueMark(item){const level=LEVELS[item.grade]||LEVELS['中平'];return '<span class="gyn-level '+level.tone+'">'+escape(level.label)+'</span>';}
@@ -50,14 +50,12 @@ function draw(){
 }
 function render(state){
  const root=document.getElementById('morning-oracle-root');if(!root)return;
- const s=status(state),picked=activeNumber?lot(activeNumber):s.today?lot(s.today.number):null;
+ const s=status(state),picked=s.today?lot(s.today.number):null;
  root.innerHTML='<div class="gyn-main"><div class="gyn-title"><div><span class="gyn-kicker">GUANYIN · 100 LOTS</span><h2>🌅 朝の運試し</h2></div><span class="gyn-status">'+escape(s.label)+'</span></div>'+
  '<div class="gyn-ritual" aria-hidden="true"><div class="gyn-tube"><span class="gyn-sticks">╲│╱│╲</span><span class="gyn-emblem">観音</span></div><p>一念を整え、今日の籤を引く</p></div>'+
- '<button type="button" class="gyn-draw" data-gyn-draw '+(!s.ready||busy?'disabled':'')+'>'+(s.today?'本日の籤を確認':s.ready?'籤筒を振る':'本日の受付終了')+'</button>'+
+ '<button type="button" class="gyn-draw" data-gyn-draw '+(!s.ready||busy?'disabled':'')+'>'+(s.today?'本日の籤は拝受済み':s.ready?'籤筒を振る':'本日の受付終了')+'</button>'+
  (picked?'<div class="gyn-today-label">📜 '+escape(s.today?s.today.date:clock().date)+' の御籤</div>'+detail(picked):'<div class="gyn-empty">全100籤から、一様な確率で1籤を選びます。</div>')+
  '<nav class="gyn-actions"><button type="button" data-gyn-open="morning-exchange">百籤図鑑</button><button type="button" data-gyn-open="morning-history">抽籤履歴</button></nav></div>';
- const b=root.querySelector('[data-gyn-draw]');
- if(b&&s.today)b.addEventListener('click',()=>{activeNumber=s.today.number;render(state);});
  renderCatalogue(state);renderHistory(state);
 }
 function visibleLots(){
@@ -97,7 +95,7 @@ function bind(context){
   }
  });
  document.addEventListener('change',e=>{if(e.target?.id==='gyn-grade'){filter=e.target.value;renderCatalogue(api.state());}});
- window.setInterval(()=>{if(!busy&&document.getElementById('page-gacha')?.classList.contains('active'))render(api.state());},60000);
+ window.setInterval(()=>{if(!busy&&document.getElementById('page-gacha')?.classList.contains('active')&&!document.getElementById('drawer-page')?.classList.contains('open'))render(api.state());},60000);
  render(api.state());
 }
 window.GuanyinMorning={bind,render,renderHistory,renderCatalogue,draw,status,lot,LOTS,LEVELS,clock,allRecords};
