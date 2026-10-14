@@ -25,7 +25,7 @@ function migrate(s,characters) {
 }
 function stamps(s,c) {const dates={};for(const b of conf(s,c).books)for(const d of Object.keys(b.days||{}))dates[d]=true;return dates;}
 function ticketLedger(s){if(!s.stampTickets||typeof s.stampTickets!=='object')s.stampTickets={};return s.stampTickets;}
-function cycles(b){const dates=Object.keys(b.days||{}).filter(k=>b.days[k]&&!b.days[k].protected).sort();let run=0,last='',rewards=[];for(const d of dates){run=d===shift(last,1)?run+1:1;last=d;if(run===7){rewards.push(d);run=0;last='';}}return rewards;}
+function cycles(b){const dates=Object.keys(b.days||{}).filter(k=>b.days[k]&&!b.days[k].protected).sort();let run=0,last='',rewards=[];for(const d of dates){run=last&&d===shift(last,1)?run+1:1;last=d;if(run===7){rewards.push(d);run=0;last='';}}return rewards;}
 function reconcileTickets(s,c){const ledger=ticketLedger(s);if(!ledger[c])ledger[c]={earned:{},spent:0};const entry=ledger[c],all=new Set();for(const b of conf(s,c).books)for(const end of cycles(b))all.add(b.id+':'+end);entry.earned=Object.fromEntries([...all].map(x=>[x,true]));return Math.max(0,all.size-entry.spent);}
 function flames(s,c) {
  const dates=stamps(s,c),t=day(),anchor=dates[t]?t:shift(t,-1);
