@@ -75,13 +75,25 @@ function createFromTicket(cid){
   const ids=items.filter(x=>x.voucherUid).map(x=>x.voucherUid);
   if(new Set(ids).size!==ids.length)return api.toast('同じ券は二度使えません');
  if(s.dateLocked<cash)return api.toast('デート資金が不足しています');
+  const snapshot={locked:s.dateLocked,memories:s.dateProfiles[cid].memories.length,ledger:s.ledger.length,events:s.events.length,
+    vouchers:items.filter(x=>x.voucherUid).map(x=>{const v=s.vouchers.find(v=>v.uid===x.voucherUid);return {v,used:v.used,usedAt:v.usedAt}})};
   s.dateLocked-=cash;
   items.forEach(x=>{x.done=true;if(x.voucherUid){const v=s.vouchers.find(v=>v.uid===x.voucherUid);v.used=v.amount;v.usedAt=new Date().toISOString();}});
 
  s.dateProfiles[cid].memories.push({id:token(),date:f.get('date'),note:String(f.get('note')||''),image:photo,items:items.map(x=>({id:x.id,title:x.title,cost:x.cost,type:x.type}))});
  if(cash>0)api.logDate({id:token(),date:f.get('date'),type:'expense',source:'date',label:'デート資金',amount:cash,note:'デート：'+items.filter(x=>!x.voucherUid).map(x=>x.title).join('・')});
   for(const item of items.filter(x=>x.voucherUid))api.logDate({id:token(),date:f.get('date'),type:'expense',source:'ticket:'+item.voucherUid,label:'出費権利：'+item.title,amount:item.cost,note:'デートで利用'});
- selected.clear();h.remove();api.save();api.toast('デートの思い出を保存したよ ♡');
+ try{
+   api.save();selected.clear();h.remove();api.toast('デートの思い出を保存したよ ♡');
+  }catch(err){
+   s.dateLocked=snapshot.locked;
+   items.forEach(x=>x.done=false);
+   snapshot.vouchers.forEach(({v,used,usedAt})=>{v.used=used;if(usedAt===undefined)delete v.usedAt;else v.usedAt=usedAt});
+   s.dateProfiles[cid].memories.length=snapshot.memories;
+   s.ledger.splice(0,s.ledger.length-snapshot.ledger);
+   s.events.splice(0,s.events.length-snapshot.events);
+   api.toast('保存できません。写真を小さくするかバックアップを確保してください');
+  }
  });
 }
 function bind(ctx){api=ctx;document.addEventListener('change',e=>{
