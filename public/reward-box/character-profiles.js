@@ -2,7 +2,7 @@
 const S=()=>window.CharacterStamps;
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const F=v=>Number(v||0).toLocaleString('ja-JP');
-let A=null,id=null,view='detail',tab='skills',goodsTab='special',attr=0,peek=null,oldOverflow='';
+let A=null,id=null,view='detail',tab='radar',goodsTab='special',attr=0,peek=null,oldOverflow='';
 const person=()=>A.chars.find(c=>c.id===id);
 const avatar=(s,c)=>S().img(s.charStamps[c]?.avatar,'cp-portrait-img')||'<span>'+E(A.chars.find(x=>x.id===c).name)+'</span>';
 function header(s){
@@ -12,28 +12,36 @@ function header(s){
 function lobby(s){
  return `<h2 class="cp-title">12人の王子たち</h2><div class="cp-portraits">${A.chars.map(c=>`<button data-cp-select="${c.id}" aria-label="${E(c.name)}">${avatar(s,c.id)}</button>`).join('')}</div>`;
 }
-function stat(s){
- const t=s.characters[id];
- return `<div class="cp-stats">${A.GROUPS.map(([k,name,i,j])=>`<div class="cp-statrow"><b>${E(name)}</b><div>${A.ATTR.slice(i,j).map((n,idx)=>`<button data-cp-attr="${i+idx}"><small>${E(n)}</small><strong>${F(t.attrs[i+idx])}</strong></button>`).join('')}</div></div>`).join('')}</div>`;
-}
 function skillPane(){
  const old=document.querySelector('#character-detail [data-char-pane="skills"]');
  return `<div class="cp-skillpane">${old?old.innerHTML.replaceAll('data-skill=','data-cp-skill='):'スキルなし'}</div>`;
 }
 function radarPane(){
- const st=A.state().characters[id],ch=person();
+ const s=A.state(),st=s.characters[id],ch=person();
  return '<div class="cp-radar-stack">'+A.GROUPS.map(([key,name,start,end])=>{
- const labels=A.ATTR.slice(start,end),max=labels.map((_,i)=>ch.levels[start+i][5]),target=labels.map((_,i)=>ch.levels[start+i][Math.min(5,st.stage)]);
- const pol=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/5;return [200+125*v*Math.cos(a),170+125*v*Math.sin(a)]};
- const shape=vals=>vals.map((v,i)=>pol(i,v).map(x=>x.toFixed(1)).join(',')).join(' ');
- let lines='';for(const r of [.25,.5,.75,1])lines+='<polygon points="'+shape(Array(5).fill(r))+'" fill="none" stroke="#ded3e7" stroke-width="1.3"/>';
- lines+='<polygon points="'+shape(target.map((v,i)=>v/Math.max(1,max[i])))+'" fill="none" stroke="#80968b" stroke-dasharray="5,4" stroke-width="2.3"/>';
- lines+='<polygon points="'+shape(st.attrs.slice(start,end).map((v,i)=>v/Math.max(1,max[i])))+'" fill="#b583ba44" stroke="#b57b59" stroke-width="3"/>';
- labels.forEach((v,i)=>{const [x,y]=pol(i,1.2);lines+='<text x="'+x+'" y="'+y+'" font-size="13" text-anchor="middle" fill="#5e5969">'+E(v)+'</text>'});
- return '<section class="cp-radar-card"><h3>'+E(name)+'</h3><svg viewBox="0 0 400 350" role="img">'+lines+'</svg><div class="cp-radar-values">'+labels.map((v,i)=>'<span>'+E(v)+' <b>'+F(st.attrs[start+i])+' / '+target[i]+'</b> · あと'+Math.max(0,Math.ceil(target[i]-st.attrs[start+i]))+'</span>').join('')+'</div></section>';
- }).join('')+'</div><button class="cp-primary" data-cp-boost>✨ 次の段階まで一括投入</button>';
-}
-function points(s) {
+  const labels=A.ATTR.slice(start,end),maximum=labels.map((_,i)=>ch.levels[start+i][5]);
+  const target=labels.map((_,i)=>ch.levels[start+i][Math.min(5,st.stage)]);
+  const values=st.attrs.slice(start,end);
+  const point=(i,m)=>{const theta=-Math.PI/2+i*Math.PI*2/5;return [205+105*m*Math.cos(theta),190+105*m*Math.sin(theta)];};
+  const poly=values=>values.map((v,i)=>point(i,v).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const rings=[.25,.5,.75,1].map(v=>'<polygon points="'+poly(Array(5).fill(v))+'" fill="none" stroke="var(--theme-line,#ded3e7)" stroke-width="1.2"/>').join('');
+  const goal='<polygon points="'+poly(target.map((v,i)=>Math.min(1,v/Math.max(1,maximum[i]))))+'" fill="none" stroke="var(--theme-target,#829f94)" stroke-dasharray="6,5" stroke-width="2.4"/>';
+  const current='<polygon points="'+poly(values.map((v,i)=>Math.min(1,v/Math.max(1,maximum[i]))))+'" fill="var(--theme-chart-fill,#b583ba33)" stroke="var(--theme-accent,#7256aa)" stroke-width="3"/>';
+  const axis=labels.map((label,i)=>{
+    const [x,y]=point(i,1.27),[tx,ty]=point(i,1.51);
+    return '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" fill="var(--theme-text,#4b4357)" font-size="13" font-weight="700" text-anchor="middle">'+E(label)+'</text>'+
+      '<text x="'+tx.toFixed(1)+'" y="'+ty.toFixed(1)+'" fill="var(--theme-accent,#7256aa)" font-size="14" font-weight="800" text-anchor="middle">'+F(values[i])+' / '+F(target[i])+'</text>';
+  }).join('');
+  const resource=Number(s.resources[key]||0),shared=Number(s.resources.base||0);
+  const actions=labels.map((label,i)=>{
+    const n=start+i;
+    return '<button type="button" class="cp-radar-point" data-cp-attr="'+n+'" aria-label="'+E(label)+'にポイント投入"><small>'+E(label)+'</small><b>'+F(values[i])+'</b><span>＋</span></button>';
+  }).join('');
+  return '<section class="cp-radar-card"><div class="cp-radar-heading"><h3>'+E(name)+'</h3><span>所持 '+F(resource)+'pt ＋ 共通 '+F(shared)+'pt</span></div>'+
+  '<div class="cp-radar-point-actions">'+actions+'</div>'+
+  '<div class="cp-radar-graphic"><svg viewBox="0 0 410 405" role="img" aria-label="'+E(name)+'の現在値と次段階目標">'+rings+goal+current+axis+'</svg></div></section>';
+ }).join('')+'</div><button class="cp-primary cp-boost" data-cp-boost>✨ 次の段階まで一括投入</button>';
+}function points(s) {
  const t=s.characters[id],ch=person(),i=attr,g=A.GROUPS.find(v=>i>=v[2]&&i<v[3]),cap=ch.levels[i][5],factor=A.KEYS[i]===ch.signature?1.5:1;
  const next=ch.levels[i][Math.min(t.stage,5)],max=Math.max(0,Math.ceil((cap-t.attrs[i])/factor)),available=Math.min(max,s.resources[g[0]]+s.resources.base);
  return `<div class="cp-panel"><h3>${E(A.ATTR[i])}にポイントを投入</h3><p>現在 ${F(t.attrs[i])} / 次段階 ${next} / 最終 ${cap} · 所持から投入可能 ${available}pt</p>
@@ -42,7 +50,7 @@ function points(s) {
 }
 function shop(s){
  const list=A.GIFTS.filter(g=>g.type===goodsTab);
- return `<div class="cp-panel"><div class="cp-shop-balance">🐱 所持ニャンコイン <b>${F(s.resources.coins)}</b></div><p>購入専用 · 贈呈は各キャラ画面から行います。</p>
+ return `<div class="cp-panel"><div class="cp-shop-balance">🐱 所持ニャンコイン <b>${F(s.resources.coins)}</b></div>
  <div class="cp-shop-tabs">${[['special','スペシャル'],['food','フード'],['fashion','ファッション']].map(([k,v])=>`<button data-cp-goods-tab="${k}" class="${goodsTab===k?'active':''}">${v}</button>`).join('')}</div>
  ${list.map(g=>`<div class="cp-good"><div><b>${E(g.name)}</b><small>🐱${F(g.price)} · 所持 ${s.itemStock[g.id]||0}</small></div>
  <button data-cp-buy="${g.id}" ${s.resources.coins<g.price||g.type!=='food'&&s.gifts[id]?.includes(g.id)?'disabled':''}>購入</button></div>`).join('')}</div>`;
@@ -65,7 +73,7 @@ function detail(s){
  <div class="cp-heart"><span>💗 好感度</span><b>${F(t.affinity)} / ${cap}</b></div>
  <div class="cp-heartbar"><i style="width:${Math.min(100,100*t.affinity/cap)}%"></i></div>
  <button class="cp-action" data-cp-gift>🎁 プレゼントを贈る</button></div></div>
- ${stat(s)}<div class="cp-tabs">${[['skills','スキル'],['radar','レーダー'],['date','デート']].map(([k,n])=>`<button data-cp-tab="${k}" class="${k===tab?'active':''}">${n}</button>`).join('')}</div>
+ <div class="cp-tabs">${[['radar','レーダー'],['skills','スキル'],['date','デート']].map(([k,n])=>`<button data-cp-tab="${k}" class="${k===tab?'active':''}">${n}</button>`).join('')}</div>
  ${pane}`;
 }
 function modalContent(s){
@@ -109,7 +117,7 @@ function bind(api) {
  const b=ev.target.closest('button');if(!b)return;
  const s=A.state();
  if(b.hasAttribute('data-cp-intake')){A.openIntake();return;}
- if(b.dataset.cpSelect){id=b.dataset.cpSelect;view='detail';tab='skills';A.selectLegacy(id);render();return;}
+ if(b.dataset.cpSelect){id=b.dataset.cpSelect;view='detail';tab='radar';A.selectLegacy(id);render();return;}
  if(b.hasAttribute('data-cp-back')){id=null;view='detail';render();return;}
  if(b.hasAttribute('data-cp-return')){view='detail';render();return;}
  if(b.dataset.cpTab){tab=b.dataset.cpTab;render();return;}
