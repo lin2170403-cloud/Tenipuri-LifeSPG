@@ -5,6 +5,7 @@ const COLORS={
  neutral:['#786951','#f2eee7','#b87d84']
 };
 const TERMS={
+ '基礎設定':['基础设置','Basic Settings'],
  'カレンダー':['日历','Calendar'],'お財布':['钱包','Wallet'],'キャラ':['角色','Characters'],'ガチャ':['抽卡','Gacha'],
  '持ち物':['物品','Inventory'],'使い方・説明書':['使用说明','Manual'],
  'キャラとスタンプ帳設定':['角色与打卡簿设置','Characters & Stamps'],
@@ -34,7 +35,16 @@ function dayKey(date=new Date(),config){
 }
 function apply(s){
  const x=sane(s),root=document.documentElement;
- for(const [k,val] of Object.entries(Object.fromEntries(['--violet','--pale','--pink'].map((key,i)=>[key,COLORS[x.theme][i]]))))root.style.setProperty(k,val);
+ const [accent,soft,pink]=COLORS[x.theme];
+ const themeVars={
+  '--violet':accent,'--pale':soft,'--pink':pink,
+  '--theme-accent':accent,'--theme-strong':accent,'--theme-soft':soft,
+  '--theme-line':accent+'33','--theme-chart-fill':accent+'33',
+  '--theme-target':pink,'--theme-focus':accent+'44',
+  '--theme-text':'#414251','--theme-wash':soft,
+  '--theme-pill':soft,'--theme-shadow':accent+'20'
+ };
+ Object.entries(themeVars).forEach(([key,value])=>root.style.setProperty(key,value));
  root.dataset.theme=x.theme;
  root.lang=x.language==='CN'?'zh-Hans':x.language==='EN'?'en':'ja';
  const index=x.language==='CN'?0:x.language==='EN'?1:-1;
@@ -49,6 +59,7 @@ function apply(s){
   ['.bottom-tabs [data-tab="gacha"] span:last-child','ガチャ'],
   ['[data-page="inventory"].menu-row','持ち物'],
   ['[data-page="manual"].menu-row','使い方・説明書'],
+  ['[data-page="basic"].menu-row','基礎設定'],
   ['[data-page="settings"].menu-row','キャラとスタンプ帳設定'],
   ['[data-page="backup"].menu-row','データバックアップ'],
   ['[data-gacha-tab="morning"]','朝の運試し'],
@@ -62,25 +73,34 @@ function apply(s){
 }
 function render(s){
  const target=document.getElementById('app-basic-settings');if(!target)return;
- const x=sane(s);
- target.innerHTML='<h3>⚙ 基礎設定 / Basic settings</h3>'+
- '<label>テーマカラー / Theme<select id="vnext-theme">'+Object.keys(COLORS).map(k=>'<option value="'+k+'" '+(k===x.theme?'selected':'')+'>'+({lavender:'ラベンダー',sakura:'桜ピンク',mint:'ミント',sky:'スカイブルー',neutral:'クラシック'}[k])+'</option>').join('')+'</select></label>'+
- '<label>一日の始まり / Day starts<select id="vnext-daystart">'+Array.from({length:24},(_,i)=>'<option value="'+i+'" '+(i===x.dayStartHour?'selected':'')+'>'+String(i).padStart(2,'0')+':00</option>').join('')+'</select></label>'+
- '<label>言語 / Language<select id="vnext-language">'+['JP','CN','EN'].map(k=>'<option value="'+k+'" '+(k===x.language?'selected':'')+'>'+k+'</option>').join('')+'</select></label>'+
- '<p class="minor">日次の集計日は設定した時刻に切り替わります。言語は主要ナビゲーションから適用します。キャラ台詞は原文のままです。</p>';
+ const x=sane(s),names={lavender:'Lavender',sakura:'Sakura',mint:'Mint',sky:'Sky',neutral:'Neutral'};
+ target.innerHTML='<h3>⚙ 基礎設定</h3>'+
+ '<div class="basic-field"><label>テーマカラー</label><div class="basic-themes" role="group" aria-label="テーマカラー">'+Object.keys(COLORS).map(k=>
+ '<button type="button" data-basic-theme="'+k+'" class="'+(k===x.theme?'chosen':'')+'" aria-pressed="'+(k===x.theme)+'" style="--sample:'+COLORS[k][0]+'"><span class="theme-dot"></span><small>'+names[k]+'</small></button>'
+ ).join('')+'</div></div>'+
+ '<div class="basic-field"><label for="vnext-daystart">一日の始まり</label><select id="vnext-daystart">'+Array.from({length:24},(_,i)=>
+ '<option value="'+i+'" '+(i===x.dayStartHour?'selected':'')+'>'+String(i).padStart(2,'0')+':00</option>'
+ ).join('')+'</select></div>'+
+ '<div class="basic-field"><label>言語 / Language</label><div class="basic-languages" role="group" aria-label="言語">'+['JP','CN','EN'].map(k=>
+ '<button type="button" data-basic-language="'+k+'" class="'+(k===x.language?'chosen':'')+'" aria-pressed="'+(k===x.language)+'">'+k+'</button>'
+ ).join('')+'</div></div>';
  apply(s);
 }
 function bind(context){
  api=context;const target=document.getElementById('app-basic-settings');if(!target)return;
- target.addEventListener('change',e=>{
+ target.addEventListener('click',event=>{
+  const theme=event.target.closest('[data-basic-theme]'),language=event.target.closest('[data-basic-language]');
+  if(!theme&&!language)return;
   const x=sane(api.state());
-  if(e.target.id==='vnext-theme')x.theme=e.target.value;
-  else if(e.target.id==='vnext-daystart')x.dayStartHour=Number(e.target.value);
-  else if(e.target.id==='vnext-language')x.language=e.target.value;
-  else return;
+  if(theme)x.theme=theme.dataset.basicTheme;
+  else x.language=language.dataset.basicLanguage;
+  api.save();render(api.state());
+ });
+ target.addEventListener('change',event=>{
+  if(event.target.id!=='vnext-daystart')return;
+  sane(api.state()).dayStartHour=Number(event.target.value);
   api.save();render(api.state());
  });
  render(api.state());
-}
-window.AppSettings={sane,dayKey,apply,render,bind,TERMS};
+}window.AppSettings={sane,dayKey,apply,render,bind,TERMS};
 })();
