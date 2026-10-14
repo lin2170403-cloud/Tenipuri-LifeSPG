@@ -62,10 +62,18 @@ function protect(s,c,slot=null) {
  const b=book(s,c);if(!b)return api.toast('スタンプ帳を作成してください');
  const n=flames(s,c);if(n>=3||(slot!==null&&Number(slot)<n))return api.toast('その炎は灯っています');
  const d=day(),all=stamps(s,c),anchor=all[d]?d:shift(d,-1),target=shift(anchor,-n);
- if(reconcileTickets(s,c)<1)return api.toast('このキャラ専用の一回休み券がありません');
- if(!window.confirm(target+' の炎を、一回休み券で守りますか？'))return;
- ticketLedger(s)[c].spent++;b.days[target]={protected:true,time:new Date().toISOString()};
- api.log('stamp','一回休み券を使用',c+' '+target);api.save();api.toast('炎を守りました 🔥');
+ const dedicated=reconcileTickets(s,c)>0;
+ const global=(s.pending||[]).findIndex(p=>p.kind==='ticket'&&String(p.detail||'').includes('チェックイン救済'));
+ if(!dedicated&&!Number(s.protectionDays||0)&&global<0)return api.toast('使える一回休み券・炎保護券がありません');
+ const kind=dedicated?'キャラ専用の一回休み券':'ガチャの炎保護券';
+ if(!window.confirm(target+' の炎を '+kind+' で守りますか？'))return;
+ if(dedicated)ticketLedger(s)[c].spent++;
+ else {
+  if(!s.protectionDays){s.pending.splice(global,1);s.protectionDays=3;}
+  s.protectionDays--;
+ }
+ b.days[target]={protected:true,time:new Date().toISOString()};
+ api.log('stamp',kind+'を使用',c+' '+target);api.save();api.toast('炎を守りました 🔥');
 }
 function renderSettings(s){
  const root=document.getElementById('cp-settings');if(!root)return;

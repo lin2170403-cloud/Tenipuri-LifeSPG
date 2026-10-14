@@ -5,7 +5,7 @@ const COLORS={
  neutral:['#786951','#f2eee7','#b87d84']
 };
 const TERMS={
- 'お財布':['钱包','Wallet'],'キャラ':['角色','Characters'],'ガチャ':['抽卡','Gacha'],
+ 'カレンダー':['日历','Calendar'],'お財布':['钱包','Wallet'],'キャラ':['角色','Characters'],'ガチャ':['抽卡','Gacha'],
  '持ち物':['物品','Inventory'],'使い方・説明書':['使用说明','Manual'],
  'キャラとスタンプ帳設定':['角色与打卡簿设置','Characters & Stamps'],
  'データバックアップ':['数据备份','Backup'],'ショップ':['商店','Shop'],
@@ -43,6 +43,7 @@ function apply(s){
   el.textContent=translated||key;
  }
  for(const [selector,key] of [
+  ['.bottom-tabs [data-tab="timeline"] span:last-child','カレンダー'],
   ['.bottom-tabs [data-tab="wallet"] span:last-child','お財布'],
   ['.bottom-tabs [data-tab="chars"] span:last-child','キャラ'],
   ['.bottom-tabs [data-tab="gacha"] span:last-child','ガチャ'],
