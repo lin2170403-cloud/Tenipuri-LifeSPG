@@ -99,6 +99,7 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./character-pages.css">
 <link rel="stylesheet" href="./fund-and-peek.css?v=20261015">
 <link rel="stylesheet" href="./vnext.css">
+<link rel="stylesheet" href="./daily-timeline.css?v=20261015-1">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -129,7 +130,7 @@ input,textarea,select{font-size:16px!important}
 <div class="gacha-pane active" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
 <div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
 <div class="gacha-actions"><button class="ghost-link" data-page="exchange" type="button">引換所</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div></div></div>
-<div class="gacha-pane" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
+<div class="gacha-pane" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="カレンダーとタイムライン" class="section" id="page-timeline"><div id="timeline-root"></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
 <div class="segment-switch wallet-switch"><button class="segment-btn active" data-walletview="ledger" type="button">帳簿</button><button class="segment-btn" data-walletview="funds" type="button">ファンド</button></div>
 <div class="wallet-subpane active" id="wallet-ledger">
 <div class="panel"><div class="heading"><h2>収入・出費を記帳</h2><span class="badge">現金の記録</span></div>
@@ -145,7 +146,7 @@ input,textarea,select{font-size:16px!important}
 <button class="menu-row" data-page="manual" type="button"><span>ⓘ</span> 使い方・説明書 <b>›</b></button>
 <button class="menu-row" data-page="settings" type="button"><span>⚙</span> キャラとスタンプ帳設定 <b>›</b></button>
 <button class="menu-row" data-page="backup" type="button"><span>⇵</span> データバックアップ <b>›</b></button>
-</div></aside><nav aria-label="メインメニュー" class="bottom-tabs"><button aria-selected="false" class="tab" data-tab="wallet" type="button"><span class="tab-icon">▤</span><span>お財布</span></button>
+</div></aside><nav aria-label="メインメニュー" class="bottom-tabs"><button aria-selected="false" class="tab" data-tab="timeline" type="button"><span class="tab-icon">▦</span><span>カレンダー</span></button><button aria-selected="false" class="tab" data-tab="wallet" type="button"><span class="tab-icon">▤</span><span>お財布</span></button>
 <button aria-selected="true" class="tab active" data-tab="chars" type="button"><span class="tab-icon">♡</span><span>キャラ</span></button>
 <button aria-selected="false" class="tab" data-tab="gacha" type="button"><span class="tab-icon">✧</span><span>ガチャ</span></button></nav><div aria-live="polite" class="toast" id="toast" role="status"></div>
 
@@ -192,7 +193,15 @@ input,textarea,select{font-size:16px!important}
  <div class="field note-field"><label for="date-note">備考（任意）</label><textarea id="date-note" rows="2" maxlength="300"></textarea></div>
  <button type="submit" class="btn" style="width:100%;margin-top:12px">💗 デート資金を入金</button></form>
  <p class="minor" style="margin-top:10px">資金を確保した後の取り消しはできません。デートへの出費はお財布の帳簿から記録できます。</p>
-</div></section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory"><div class="panel"><h3>🎟️ キャラ専用・一回休み券</h3><div id="stamp-tickets-list"></div></div><div id="drawer-pending-slot"><div class="panel"><div class="heading"><h2>未割当ボーナス・チケット</h2><span class="badge" id="pending-count">0件</span></div><div class="notice">指定キャラ好感度はここで相手を選んで付与。チケットは記録として保管します。</div><div class="list list-scroll" id="pending-list" style="margin-top:9px"></div></div></div><div id="drawer-voucher-slot"><details class="expander"><summary>🎟️ 獲得した出費権利（未使用の券を含む）<span class="badge" id="voucher-count">0件</span></summary><div class="content"><p class="minor">現バージョンは「何が当たったか」までを記録します。利用額や余りの精算はまだ入力しません。</p><div class="list list-scroll" id="voucher-list"></div></div></details></div></div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
+</div></section></div></div><div aria-hidden="true" class="full-page" id="drawer-page"><div class="drawer-page-top"><button aria-label="戻る" id="drawer-back" type="button">‹</button><h2 id="drawer-page-title">ページ</h2><span></span></div><div class="drawer-page-scroll" id="drawer-page-content"></div></div><div hidden="" id="subpage-repository"><div id="content-inventory">
+ <details class="expander" open><summary>🎟️ キャラ専用・一回休み券 <span class="badge" id="stamp-ticket-count">0枚</span></summary>
+ <div class="content"><div id="stamp-tickets-list"></div></div></details>
+ <div id="drawer-pending-slot"><details class="expander"><summary>🎁 未割当報酬 <span class="badge" id="pending-count">0件</span></summary>
+ <div class="content"><p class="minor">指定キャラ好感度はここで相手を選んで付与できます。</p><div class="list list-scroll" id="pending-list"></div></div></details></div>
+ <div id="drawer-voucher-slot"><details class="expander"><summary>🎫 出費チケット <span class="badge" id="voucher-count">0件</span></summary>
+ <div class="content"><p class="minor">未使用券はお財布の出費記録で使用するか、キャラのデート・ウィッシュリストに引用できます。引用済みの券は通常の出費には使えません。</p>
+ <div class="list list-scroll" id="voucher-list"></div></div></details></div>
+ </div><div id="content-manual"><div class="panel"><h3>生活データの獲得基準</h3><div class="manual-grid"><span>🧍 フィジカル</span><b>25 / 日</b><span>🧠 メンタル</span><b>25 / 日</b><span>🎾 テクニック</span><b>25 / 日</b><span>🔮 悟性</span><b>本文1,000字 +20 · Section初稿 +35</b><span>💡 工夫</span><b>就活成果による（+1〜150、満足Offer後は+15/日）</b><span>🐱 ニャンコイン</span><b>日常320 / 日 + 周期家事560 / 週</b></div><p class="minor">言語学習・就活準備・文献読書は各系統25ptが日次上限。悟性・工夫は成果制。</p></div><div class="panel"><h3>姫猫ご褒美・提供割合</h3><div class="rarities" id="rarity-grid"></div><div class="pools" id="rarity-bar"></div><p class="minor" id="pity-caption"></p></div><div class="panel"><h3>🌅 朝の運試し：ルール</h3><p class="minor">朝9:00前に1日1回の予定です。現在、景品・提供割合が未設定のため抽選を停止しています。</p></div>
 
 <div class="panel"><h3>✈️ 北海道ロマン：提供割合・ルール</h3>
 <div class="manual-grid"><span>MR</span><b>0.6%</b><span>UR</span><b>3.4%</b><span>SSR</span><b>11%</b><span>SR</span><b>25%</b><span>R</span><b>30%</b><span>N</span><b>30%</b></div>
@@ -211,7 +220,8 @@ input,textarea,select{font-size:16px!important}
 <script src="./hokkaido-gacha.js"></script>
 <script src="./character-stamps.js"></script>
 <script src="./app-settings.js"></script>
-<script src="./date-system.js"></script>
+<script src="./date-system.js?v=20261015-1"></script>
+<script src="./daily-timeline.js?v=20261015-1"></script>
 <script src="./character-profiles.js?v=20261015"></script>
 <script>
 (()=>{'use strict';
@@ -304,6 +314,7 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
   s.stampTickets=raw.stampTickets&&typeof raw.stampTickets==='object'?raw.stampTickets:{};
   s.dateProfiles=raw.dateProfiles&&typeof raw.dateProfiles==='object'?raw.dateProfiles:{};
   s.appSettings=raw.appSettings&&typeof raw.appSettings==='object'?raw.appSettings:{};
+  s.timelinePosts=Array.isArray(raw.timelinePosts)?raw.timelinePosts:[];
   s.hokkaidoGacha=raw.hokkaidoGacha||null;
   if(!raw.uiVersion||raw.uiVersion<4){s.dateLocked+=(s.funds.date||0);s.funds.date=0;}
   s.vouchers.forEach((v,i)=>{if(!v.uid)v.uid='legacy-'+i+'-'+String(v.draw||0);if(!Number.isFinite(v.used))v.used=0});
@@ -390,7 +401,7 @@ function fmtTimeDate(d){return String(d||'').slice(5).replace('-','/')}
 function renderLedgerExtra(){const src=$('ledger-source').value,t=$('ledger-type').value,cont=$('ledger-extra');$('ledger-source-field').style.display=t==='income'?'none':'';
  if(t==='income'){cont.innerHTML='<div class="notice">収入は帳簿にのみ記録され、残高・ファンドには加算されません。</div>';return}
  if(src==='fund'){const meta=FUND_META.filter(x=>x[0]!=='date');cont.innerHTML='<div class="field"><label for="ledger-fund">支出元ファンド</label><select id="ledger-fund">'+meta.map(([k,e,n])=>`<option value="${k}">${e} ${n}（使用可能 ${money(availableFund(k))}）</option>`).join('')+'</select></div>'}
- else if(src==='ticket'){const remain=state.vouchers.filter(v=>(v.amount||0)>(v.used||0));cont.innerHTML='<div class="field"><label for="ledger-voucher">使うガチャチケット</label><select id="ledger-voucher">'+remain.map(v=>`<option value="${esc(v.uid)}">${esc(v.name)}（${money(v.amount-(v.used||0))}）</option>`).join('')+'</select></div>'+(remain.length?'':'<p class="minor">使えるチケットがありません。</p>')}
+ else if(src==='ticket'){const remain=window.DateSystem.tickets(state);cont.innerHTML='<div class="field"><label for="ledger-voucher">使うガチャチケット</label><select id="ledger-voucher">'+remain.map(v=>`<option value="${esc(v.uid)}">${esc(v.name)}（${money(v.amount-(v.used||0))}）</option>`).join('')+'</select></div>'+(remain.length?'':'<p class="minor">使えるチケットがありません。</p>')}
  else if(src==='date')cont.innerHTML=`<div class="notice">🔒 デート専用 · 使用可能 ${money(availableDate())}</div>`;
  else cont.innerHTML=`<div class="notice">本日使用 ${money(todayLivingSpent($('ledger-date').value||today()))} / 3,000円。超過分は借金になる。</div>`;
 }
@@ -429,7 +440,7 @@ function renderStats(){const d=today(),todayGem=state.daily[d]||0;$('stat-gems')
  const buffs=[];if(state.rStreak>=12)buffs.push('12連続R：次はSR以上');else if(state.rStreak>=5)buffs.push('連続R救済：'+state.rStreak);if(state.drought>=20)buffs.push('SSR以上未獲得：'+state.drought);$('pity-caption').textContent=buffs.join(' · ')||'累計回数・直近結果で自動調整';
  $('saving-total').textContent=money(state.savings);$('saving-percent').textContent=(state.savings/150000*100).toFixed(1)+'% 達成';$('saving-remaining').textContent='残り '+money(Math.max(0,150000-state.savings));$('saving-fill').style.width=Math.min(100,state.savings/150000*100)+'%';
  $('pending-count').textContent=state.pending.length+'件';$('pending-list').innerHTML=state.pending.length?state.pending.map((e,i)=>`<div class="save-bonus"><div class="small"><b>${esc(e.detail)}</b><div class="tiny dim">${esc(e.at||'')} ${e.draw?'#'+e.draw:''}</div></div>${e.kind==='assign-affection'?`<div class="formrow"><select class="inline-select" id="pending-char-${i}">${CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><button class="btn secondary" data-assign="${i}" type="button">付与</button></div>`:'<span class="pill">保管中</span>'}</div>`).join(''):'<p class="minor">未割当の好感度・チケットはありません。</p>';
- $('voucher-count').textContent=state.vouchers.length+'件';$('voucher-list').innerHTML=state.vouchers.length?state.vouchers.map(v=>`<div class="listitem"><div><span class="pill ${esc(v.rarity)}">${esc(v.rarity)}</span><span class="name"> ${esc(v.name)}</span><div class="sub">#${v.draw} · ${esc(v.at)}</div></div><div class="amount">${money(v.amount)}</div></div>`).join(''):'<p class="minor">まだ出費権利はありません。</p>';
+ $('voucher-count').textContent=state.vouchers.length+'件';$('voucher-list').innerHTML=state.vouchers.length?state.vouchers.map(v=>`<div class="listitem"><div><span class="pill ${esc(v.rarity)}">${esc(v.rarity)}</span><span class="name"> ${esc(v.name)}</span><div class="sub">#${v.draw||'—'} · ${esc(v.at||'')} · ${Number(v.used||0)?'使用済み':window.DateSystem.tickets(state).some(t=>t.uid===v.uid)?'未使用':'デートへ確保中'}</div></div><div class="amount">${money(v.amount)}</div></div>`).join(''):'<p class="minor">まだ出費権利はありません。</p>';
 renderFinance();renderStock();}
 function renderInput(){const d=$('training-date').value||today();const row=state.trainingDaily[d]||{};if(document.activeElement&&!document.activeElement.closest('#training-form')){RES.forEach(k=>{$('earn-'+k).value=row[k]||0});$('training-note').value=row.note||''}
  $('training-balances').innerHTML=[...RES,'base'].map(k=>`<div class="listitem"><div class="name">${LABELS[k]}</div><div class="amount">${fmt(state.resources[k])}${k==='coins'?' 🐱':' pt'}</div></div>`).join('');
@@ -502,8 +513,8 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
- const st=$('stamp-tickets-list');if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';}
+function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
+ const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
   document.querySelectorAll('[data-walletview]').forEach(b=>b.addEventListener('click',()=>setWalletView(b.dataset.walletview)));document.querySelectorAll('[data-charpage].segment-btn').forEach(b=>b.addEventListener('click',()=>switchCharPage(b.dataset.charpage)));
@@ -552,7 +563,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  $('shop-items').addEventListener('click',e=>{const b=e.target.closest('[data-gift]');if(!b)return;const g=GIFTS.find(x=>x.id===b.dataset.gift),c=CHAR_BY_ID[shopChar];if(!g||g.type==='special'&&g.cid!==shopChar)return;const old=state.gifts[shopChar]||[];if(g.type!=='food'&&old.includes(g.id))return toast('この贈り物はもう渡してあります');if(state.resources.coins<g.price)return toast('ニャンコインが足りません');const val=giftValue(g,shopChar);if(!window.confirm(`${c.name}に「${g.name}」を贈る？\n🐱 ${g.price} → 好感度 +${val}`))return;state.resources.coins-=g.price;if(g.type!=='food'){state.gifts[shopChar]=[...old,g.id]}addAffinity(shopChar,val,`${g.name}（${fmt(g.price)}🐱）`);persist();render();toast(`${c.name} がプレゼントを受け取った ♡`)});
  $('pending-list').addEventListener('click',e=>{const b=e.target.closest('[data-assign]');if(!b)return;const ix=Number(b.dataset.assign),p=state.pending[ix],cid=$('pending-char-'+ix)?.value;if(!p||p.kind!=='assign-affection'||!CHAR_BY_ID[cid])return;addAffinity(cid,p.value,p.why||`ガチャ #${p.draw||'—'}`);state.pending.splice(ix,1);persist();render();toast('好感度を付与したよ ♡')});
  $('export-btn').addEventListener('click',()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}));a.href=url;a.download='hime-gacha-training-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),900);toast('バックアップを書き出したよ')});
- $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
+ $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
 
  $('ledger-form').addEventListener('submit',e=>{e.preventDefault();const date=$('ledger-date').value,amount=int($('ledger-amount').value),type=$('ledger-type').value,src=$('ledger-source').value,note=$('ledger-note').value.trim();if(!amount||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return toast('日付と金額を確認してね');
  let label=type==='income'?'収入':'出費',source=src,debtAdded=0;
@@ -560,7 +571,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  if(src==='living'){const remain=Math.max(0,3000-todayLivingSpent(date));debtAdded=Math.max(0,amount-remain);state.debt+=debtAdded;label='基礎生活費'}
  else if(src==='fund'){const k=$('ledger-fund')?.value;if(!k||!state.funds.hasOwnProperty(k)||k==='date')return toast('ファンドを選んでね');if(availableFund(k,date)<amount)return toast('その日に使用可能なファンド残高が足りません');state.funds[k]-=amount;label=FUND_META.find(x=>x[0]===k)?.[2]||k;source='fund:'+k}
  else if(src==='date'){if(availableDate(date)<amount)return toast('その日に使用可能なデート資金が足りません');state.dateLocked-=amount;label='デート資金'}
- else if(src==='ticket'){const v=state.vouchers.find(x=>x.uid===$('ledger-voucher')?.value);if(!v||v.used||v.amount<amount)return toast('チケット残額と利用金額を確認してね');v.used=amount;const remain=v.amount-amount;if(remain>0){state.funds.unallocated+=remain;state.fundCredits.push({key:'unallocated',amount:remain,date:today()})}label='ガチャチケット：'+v.name;source='ticket:'+v.uid}
+ else if(src==='ticket'){const v=window.DateSystem.tickets(state).find(x=>x.uid===$('ledger-voucher')?.value);if(!v||v.used||v.amount<amount)return toast('チケット残額と利用金額を確認してね');v.used=amount;const remain=v.amount-amount;if(remain>0){state.funds.unallocated+=remain;state.fundCredits.push({key:'unallocated',amount:remain,date:today()})}label='ガチャチケット：'+v.name;source='ticket:'+v.uid}
  else return toast('支出元を選んでね')}
  state.ledger.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),date,type,source,amount,label,note,debtAdded});log('ledger',label+' '+money(amount),note);$('ledger-amount').value='';$('ledger-note').value='';persist();render();toast(type==='income'?'収入を記録したよ':'支出を記録したよ')});
  $('stock-list').addEventListener('click',e=>{
@@ -606,6 +617,7 @@ window.CharacterStamps.bind({getState:()=>state,chars:CHARS,toast,log,save:chara
 window.CharacterProfiles.bind(characterApi);
 window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
 window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
+window.DailyTimeline.bind({state:()=>state,save:()=>{persist();render()},toast});
 window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});render();}
 bind();
 })();
