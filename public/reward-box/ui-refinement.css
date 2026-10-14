@@ -195,3 +195,25 @@ select:not([multiple]){appearance:none!important;-webkit-appearance:none!importa
  width:42px;height:42px;border-radius:50%;background:#ffffff25;color:white;font-size:29px;display:grid;place-items:center}
 /* Trim stale helper paragraphs in high-density panels without hiding status messages */
 #app-basic-settings>.minor,#content-inventory .content>p.minor,#page-wallet .mini-summary +p.minor{display:none!important}
+
+/* Active segmented tabs use a light surface, avoiding accent-on-accent text. */
+.cp-tabs button.active,.gacha-switch .segment-btn.active,.wallet-switch .segment-btn.active{
+ background:#fff!important;color:var(--theme-accent)!important;border-color:var(--theme-line)!important;
+}
+.cp-radar-card .cp-radar-heading,.cp-radar-card .cp-radar-point-actions{max-width:100%}
+.cp-radar-card .cp-radar-graphic svg{overflow:visible}
+.cp-peek-top b,.cp-resources b,.cp-title{color:var(--theme-text)}
+.cp-peek-top button{background:var(--theme-soft)!important;color:var(--theme-accent)!important}
+.cp-shoplink{border-color:var(--theme-line)!important}
+.cp-portraits button,.cp-uploads>div,.cp-set-grid button,.cp-crop-modal canvas{
+ border-color:var(--theme-line)!important;background:var(--theme-soft)!important;
+}
+.cp-skills,.cp-good,.cp-book-row{border-color:var(--theme-line)!important}
+#cp-settings button:not(.cp-primary),.cp-book-row button{color:var(--theme-accent)!important;border-color:var(--theme-line)!important}
+#page-chars .cp-statrow{display:none!important}
+:is(.cp-heartbar i,.cp-progress i,.cp-progressbar i){background:var(--theme-accent)!important}
+.vdate-fund button,.cp-action,.cp-shoplink{background:var(--theme-soft)!important}
+.cp-radar-card h3,.vdate-row b{color:var(--theme-text)}
+.tl-editor .tl-toolbar{background:var(--theme-soft)!important;border-color:var(--theme-line)!important}
+.tl-editor .tl-toolbar button{color:var(--theme-accent)!important}
+.vdate-create-buttons button:disabled{opacity:.45!important}
