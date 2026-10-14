@@ -88,7 +88,7 @@ function openEditor(post){
   if(remove){activeImages.splice(Number(remove.dataset.tlImageRemove),1);preview();return;}
   if(e.target.closest('[data-tl-remove]')&&editing){
    if(!window.confirm('この投稿を削除しますか？'))return;
-   const s=api.state();s.timelinePosts=s.timelinePosts.filter(p=>p.id!==editing);saveAndClose();
+   const s=api.state(),before=s.timelinePosts;s.timelinePosts=s.timelinePosts.filter(p=>p.id!==editing);saveAndClose(()=>{s.timelinePosts=before});
   }
  });
  modal.querySelector('#tl-post-form').addEventListener('submit',e=>{
@@ -97,15 +97,14 @@ function openEditor(post){
   const s=api.state(),date=e.target.elements.date.value,time=e.target.elements.time.value,html=clean(modal.querySelector('#tl-content').innerHTML);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))return api.toast('日時を確認してください');
   if(!html.replace(/<[^>]+>/g,'').trim()&&!activeImages.length)return api.toast('本文か画像を追加してください');
-  const prev=s.timelinePosts.find(x=>x.id===editing),p={id:editing||id(),date,time,html,images:[...activeImages],created:prev?.created||new Date().toISOString(),updated:new Date().toISOString()};
+  const prev=s.timelinePosts.find(x=>x.id===editing),backup=prev?{...prev,images:[...(prev.images||[])]}:null,p={id:editing||id(),date,time,html,images:[...activeImages],created:prev?.created||new Date().toISOString(),updated:new Date().toISOString()};
   if(prev)Object.assign(prev,p);else s.timelinePosts.push(p);
   chosen=date;month=date.slice(0,7);
-  saveAndClose();
+  saveAndClose(()=>{if(backup)Object.assign(prev,backup);else s.timelinePosts=s.timelinePosts.filter(x=>x.id!==p.id)});
  });
 }
-function saveAndClose(){
- modal?.remove();modal=null;editing=null;activeImages=[];
- try{api.save();api.toast('タイムラインを保存しました')}catch(e){api.toast('保存できません。画像数や容量を減らしてください')}
+function saveAndClose(revert){
+ try{api.save();modal?.remove();modal=null;editing=null;activeImages=[];api.toast('タイムラインを保存しました')}catch(e){revert?.();api.toast('保存できません。画像数や容量を減らして再試行してください')}
 }
 function preview(){
  const target=modal.querySelector('#tl-image-preview');
