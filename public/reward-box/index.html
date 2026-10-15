@@ -358,10 +358,11 @@ function readState(){const raw=localStorage.getItem(STORAGE)||localStorage.getIt
 let state=readState(),activeTab='chars',selectedChar='niou',shopChar='niou',shopTab='special',attrGroup='physical',fundSign='add',toastTimer=null;
 let lastResourceSnapshot={...state.resources};
 window.PointLedger.ensure(state);
+let lastPointEvent=state.events[0]||null;
 function persist(){
  const journal=window.PointLedger.ensure(state);
  const before={...lastResourceSnapshot};
- const marker=state.events[0]||{};
+ const marker=state.events[0]!==lastPointEvent?(state.events[0]||{}):{};
  const added=window.PointLedger.record(state,before,{
    source:marker.kind||'record',title:marker.title||'育成ポイント変動',
    note:marker.note||'',reference:marker.id||'',
@@ -370,6 +371,7 @@ function persist(){
  try{
    localStorage.setItem(STORAGE,JSON.stringify(state));
    lastResourceSnapshot={...state.resources};
+   lastPointEvent=state.events[0]||null;
  }catch(error){
    window.PointLedger.revert(state,added);
    throw error;
@@ -574,12 +576,37 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  $('shop-explain').textContent=shopTab==='special'?'各キャラ専用・1種類につき1回購入。4ランクで価格と好感度が変わります。':shopTab==='food'?'料理は繰り返し贈れます。相手の好みにより好感度+4 / +8 / +16。価格50🐱。':'ファッションはキャラ別コレクション。1種類につき各キャラ1回購入、相性で好感度が変わります。';
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
-function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);try{window.GuanyinMorning?.render(state)}catch(err){console.warn('朝の運試し表示をスキップ:',err)}window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
- const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);
+/* Update only the currently active screen. Avoid rebuilding every form on each save. */
+function render(){
+ window.DailyTimeline.migrate(state);
+ window.DateSystem.migrate(state,CHARS);
+ window.AppSettings.sane(state);
+ renderStats();
+ if(activeSheet==='intake'||activeSheet==='saving'||activeSubpage==='basic')renderInput();
+ if(activeTab==='chars'){
+  renderCharacters();
+  if(charPage==='shop')renderShop();
+  window.CharacterProfiles.render();
+ }
+ if(activeTab==='gacha'){
+  window.HokkaidoGacha.render(state);
+  try{window.GuanyinMorning?.render(state)}catch(error){console.warn('朝の運試し表示:',error)}
+ }
+ if(activeSubpage==='settings')window.CharacterStamps.renderSettings(state);
+ if(activeSubpage==='basic')window.AppSettings.render(state);
+ else window.AppSettings.apply(state);
+ const stampCount=$('stamp-ticket-count'),stampList=$('stamp-tickets-list');
+ if(stampCount)stampCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';
+ if(stampList&&activeSubpage==='inventory')stampList.innerHTML=CHARS.map(c=>({
+  c,count:window.CharacterStamps.reconcileTickets(state,c.id)
+ })).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';
+ if(activeTab==='timeline')window.DailyTimeline.render(state);
  try{
-   if(window.WalletUpgrade){window.WalletUpgrade.render();const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュール：読み込み済み';}
-   else{const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュール：読み込めていません（再読み込みをお試しください）';}
- }catch(err){console.error('家計画面描画エラー:',err);const diag=$('app-module-status');if(diag)diag.textContent='家計画面でエラーが発生しました：'+(err.message||'不明');}
+  if(window.WalletUpgrade){window.WalletUpgrade.render();const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュール：読み込み済み';}
+  else{const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュールが見つかりません';}
+ }catch(error){console.error('家計画面描画エラー:',error);const diag=$('app-module-status');if(diag)diag.textContent='家計画面エラー：'+error.message;}
+ // Images read from IndexedDB should become visible now, not on page refresh.
+ window.AppPhotos?.hydrate(document).catch(error=>console.warn('写真表示に失敗:',error));
 }
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
@@ -637,7 +664,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
   a.href=url;a.download='hime-gacha-training-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),900);toast('写真を含むバックアップを書き出したよ');
  }catch(err){console.error('バックアップ失敗',err);toast('バックアップの書き出しに失敗しました。写真を確認してください')}
 });
- $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);await window.AppPhotos.importState(d);state=d;lastResourceSnapshot={...state.resources};window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
+ $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);await window.AppPhotos.importState(d);state=d;lastResourceSnapshot={...state.resources};lastPointEvent=state.events[0]||null;window.PointLedger.ensure(state);window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
 
  $('ledger-form').addEventListener('submit',e=>{e.preventDefault();const date=$('ledger-date').value,amount=int($('ledger-amount').value),type=$('ledger-type').value,src=$('ledger-source').value,note=$('ledger-note').value.trim();if(!amount||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return toast('日付と金額を確認してね');
  let label=type==='income'?'収入':'出費',source=src,debtAdded=0;
