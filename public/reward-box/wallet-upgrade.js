@@ -70,6 +70,10 @@ function fundModal(key,entry=null){
   if(!Number.isSafeInteger(amt)||amt<1)return a.toast('金額を入力してください');
   if(!normal.includes(from)&&from!=='outside'||from===key)return a.toast('移動元を確認してください');
   // A saved transfer is undone on a working clone before the revised one is applied.
+  const before={funds:{...s.funds},dateLocked:s.dateLocked,savings:s.savings,debt:s.debt,
+    fundCredits:[...s.fundCredits],dateCredits:[...s.dateCredits],
+    walletTransactions:s.walletTransactions.map(t=>({...t})),jewels:s.jewels,
+    hokkaidoGacha:JSON.parse(JSON.stringify(s.hokkaidoGacha||null)),storyHistory:[...(s.storyHistory||[])]};
   const copy={...s,funds:{...s.funds},fundCredits:[...s.fundCredits],dateCredits:[...s.dateCredits]};
   try{
    if(entry&&entry.amount===amt&&entry.from===from){
@@ -88,7 +92,13 @@ function fundModal(key,entry=null){
    if(key==='savings')window.HokkaidoGacha.credit(s);
    a.log('fund',entry?'資金記録を修正':'ファンド資金移動',labelText(from==='outside'?'unallocated':from)+' → '+labelText(key)+' '+yen(amt)+(note?'｜'+note:''));
    a.persist();close();a.render();a.toast('資金記録を保存しました');
-  }catch(err){a.toast(err.message||'記録できませんでした')}
+  }catch(err){
+   s.funds=before.funds;s.dateLocked=before.dateLocked;s.savings=before.savings;s.debt=before.debt;
+   s.fundCredits=before.fundCredits;s.dateCredits=before.dateCredits;
+   s.walletTransactions=before.walletTransactions;s.jewels=before.jewels;
+   s.hokkaidoGacha=before.hokkaidoGacha;s.storyHistory=before.storyHistory;
+   a.toast(err.message||'記録できませんでした');
+  }
  });
 }
 function editTx(entry){fundModal(entry.to,entry)}
@@ -108,7 +118,7 @@ function editLedger(i){
   e.preventDefault();
   const val=Number(e.target.elements.amount.value),date=e.target.elements.date.value,note=e.target.elements.note.value.trim();
   if(!Number.isSafeInteger(val)||val<1||!/^\d{4}-\d{2}-\d{2}$/.test(date))return a.toast('日付・金額を確認してください');
-  const prev=x.amount,diff=val-prev,origin=x.source||'',beforeDebt=s.debt;
+  const oldRecord={...x},oldFinancial={debt:s.debt,dateLocked:s.dateLocked,funds:{...s.funds}},prev=x.amount,diff=val-prev,origin=x.source||'';
   if(origin==='living'){
    const current=s.ledger.filter(z=>z.source==='living'&&z.type==='expense'&&z.date===x.date).reduce((n,z)=>n+z.amount,0);
    const revised=s.ledger.filter(z=>z!==x&&z.source==='living'&&z.type==='expense'&&z.date===date).reduce((n,z)=>n+z.amount,0)+val;
@@ -127,7 +137,7 @@ function editLedger(i){
   }else if(origin.startsWith('ticket:')&&val!==prev)return a.toast('ガチャチケットの使用額は残高保護のため変更できません');
   x.amount=val;x.date=date;x.note=note;
   try{a.persist();close();a.render();a.toast('帳簿を修正しました')}catch(err){
-   x.amount=prev;s.debt=beforeDebt;a.toast('保存できませんでした')
+   Object.assign(x,oldRecord);s.debt=oldFinancial.debt;s.dateLocked=oldFinancial.dateLocked;s.funds=oldFinancial.funds;a.toast('保存できませんでした')
   }
  });
 }
