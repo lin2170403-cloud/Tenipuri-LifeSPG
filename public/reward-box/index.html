@@ -494,7 +494,7 @@ function renderStock(){
  }).join('');
  $('gacha-history-list').innerHTML=state.events.filter(e=>e.kind==='gacha'||e.kind==='exchange').slice(0,250).map(x=>
  `<div class="ledger-entry"><div><b>${esc(x.title)}</b><small>${esc(x.note)} · ${esc(x.at)}</small></div></div>`).join('')||'<p class="minor">まだ抽選履歴はありません。</p>';
- $('morning-history-list').innerHTML='<p class="minor">景品がまだ設定されていないため、抽選履歴はありません。</p>'; const now=new Date(),jst=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);$('morning-status').textContent=jst<'09:00'?'9:00前です。景品設定後に1日1回利用できます。':'本日の朝9:00を過ぎました。次の朝くじは明日（景品設定後）。';}
+ $('morning-history-list').innerHTML='<p class="minor">景品がまだ設定されていないため、抽選履歴はありません。</p>'; const now=new Date(),jst=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);const morningStatus=$('morning-status');if(morningStatus)morningStatus.textContent=jst<'09:00'?'9:00前です。景品設定後に1日1回利用できます。':'本日の朝9:00を過ぎました。次の朝くじは明日（景品設定後）。';}
 
 function renderStats(){const d=today(),todayGem=state.daily[d]||0;$('stat-gems').textContent=fmt(state.gems);$('stat-savings').textContent=fmt(state.savings);$('stat-date').textContent=fmt(state.dateLocked);$('stat-jewels').textContent=fmt(state.jewels);$('hk-gauge-fill').style.width=Math.min(100,state.savings/150000*100)+'%';
  $('resource-strip').innerHTML=[['physical','フィジカル'],['mental','メンタル'],['technical','テクニック'],['base','共通pt'],['wisdom','悟性'],['ingenuity','工夫'],['coins','ニャンコイン']].map(([k,n])=>`<div class="resource-chip"><div class="lab">${n}</div><div class="amt">${fmt(state.resources[k])}${k==='coins'?'<small> 🐱</small>':''}</div></div>`).join('');
