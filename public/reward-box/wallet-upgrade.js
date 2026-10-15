@@ -190,7 +190,7 @@ function bind(context){
  $$('fund-operation-history')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-edit]');if(!b)return;const tx=a.state().walletTransactions.find(x=>x.id===b.dataset.walletEdit);if(tx)editTx(tx)});
  $$('ledger-list')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-ledger]');if(b)editLedger(Number(b.dataset.walletLedger))});
  document.querySelectorAll('[data-point-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.pointView;renderPoints()}));
- $('point-history-list')?.addEventListener('click',e=>{
+ $$('point-history-list')?.addEventListener('click',e=>{
   const training=e.target.closest('[data-point-training]'),audit=e.target.closest('[data-point-audit]');
   if(training)editTraining(training.dataset.pointTraining);else if(audit)editAudit(audit.dataset.pointAudit);
  });
