@@ -1,6 +1,6 @@
 /* Shared image persistence for character-stamp photos, compatible with timeline photo IDs. */
 (()=>{'use strict';
-const re=/^idb:[a-z0-9-]+$/i;
+const re=/^idb:[a-z0-9_-]+$/i;
 const imageData=/^data:image\/(?:png|jpeg|jpg|webp);base64,[a-z0-9+/=]+$/i;
 let opener=null;const cache=new Map();
 function db(){
