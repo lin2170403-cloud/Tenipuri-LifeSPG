@@ -69,6 +69,23 @@ async function importPhotos(state){
  }
  return state;
 }
+async function migrateLegacyPhotos(state){
+ const changes=[];
+ for(const post of state.timelinePosts||[]){
+  if(!Array.isArray(post.images)||!post.images.some(src=>inlinePhoto.test(src)))continue;
+  const original=[...post.images];
+  try{
+   const moved=await Promise.all(original.map(src=>inlinePhoto.test(src)?savePhoto(src):src));
+   changes.push({post,original,moved});
+  }catch(e){console.warn('旧画像の移行をスキップ:',e);return;}
+ }
+ if(!changes.length)return;
+ for(const c of changes)c.post.images=c.moved;
+ try{api.save()}catch(e){
+  for(const c of changes)c.post.images=c.original;
+  console.warn('旧画像を元の状態に戻しました:',e);
+ }
+}
 function clean(html){
  const input=document.createElement('template');input.innerHTML=String(html||'').slice(0,100000);
  const allowed=new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','SPAN','DIV','P','BR']);
@@ -225,6 +242,7 @@ function bind(context){
   if(img)openImageLightbox(img.src);
  });
  migrate(api.state());
+ migrateLegacyPhotos(api.state());
  root.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.tlMonth){if(calendarCompact){const d=new Date(chosen+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+7*Number(b.dataset.tlMonth));chosen=d.toISOString().slice(0,10);month=chosen.slice(0,7)}else month=nextMonth(month,Number(b.dataset.tlMonth));render(api.state());return}
