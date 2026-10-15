@@ -349,7 +349,7 @@ function persist(){
  const negatives=Object.fromEntries(Object.entries(delta).filter(([,v])=>v<0));
  const last=state.events[0],heading=last?.title||'ポイント変動';
  if(Object.keys(positives).length)state.pointHistory.unshift({id:'pt-'+Date.now()+'-in',kind:'earned',title:heading,delta:positives,at:timestamp()});
- if(Object.keys(negatives).length)state.pointHistory.unshift({id:'pt-'+Date.now()+'-out',kind:'spent',title:heading,delta:negatives,at:timestamp()});
+ if(Object.keys(negatives).length)state.pointHistory.unshift({id:'pt-'+Date.now()+'-out',kind:last?.kind==='training'?'adjustment':'spent',title:heading,delta:negatives,at:timestamp()});
  state.pointHistory=state.pointHistory.slice(0,2000);
  try{localStorage.setItem(STORAGE,JSON.stringify(state));lastResourceSnapshot={...state.resources}}
  catch(e){if(Object.keys(positives).length||Object.keys(negatives).length)state.pointHistory.splice(0,Object.keys(positives).length&&Object.keys(negatives).length?2:1);throw e}
@@ -443,7 +443,7 @@ function renderLedgerExtra(){const src=$('ledger-source').value,t=$('ledger-type
  if(src==='fund'){const meta=FUND_META.filter(x=>x[0]!=='date');cont.innerHTML='<div class="field"><label for="ledger-fund">支出元ファンド</label><select id="ledger-fund">'+meta.map(([k,e,n])=>`<option value="${k}">${e} ${n}（使用可能 ${money(availableFund(k))}）</option>`).join('')+'</select></div>'}
  else if(src==='ticket'){const remain=window.DateSystem.tickets(state);cont.innerHTML='<div class="field"><label for="ledger-voucher">使うガチャチケット</label><select id="ledger-voucher">'+remain.map(v=>`<option value="${esc(v.uid)}">${esc(v.name)}（${money(v.amount-(v.used||0))}）</option>`).join('')+'</select></div>'+(remain.length?'':'<p class="minor">使えるチケットがありません。</p>')}
  else if(src==='date')cont.innerHTML=`<div class="notice">🔒 デート専用 · 使用可能 ${money(availableDate())}</div>`;
- else cont.innerHTML=`<div class="notice">本日使用 ${money(todayLivingSpent($('ledger-date').value||today()))} / 3,000円。超過分は借金になる。</div>`;
+ else cont.innerHTML='';
 }
 function renderFinance(){const d=today();$('living-status').textContent=`${money(todayLivingSpent())} / 3,000円`;$('debt-status').textContent=money(state.debt);$('ledger-count').textContent=state.ledger.length+'件';
  $('ledger-list').innerHTML=state.ledger.length?state.ledger.slice(0,150).map(x=>`<div class="ledger-entry"><div><b>${esc(x.note||x.category||'記録')}</b><small>${esc(x.date)} · ${esc(x.label)}${x.debtAdded?' · 借金+'+money(x.debtAdded):''}</small></div><div class="sum ${x.type==='income'?'income':''}">${x.type==='income'?'+':'−'}${money(x.amount)}</div></div>`).join(''):'<p class="minor">まだ記録がありません。</p>';
@@ -611,7 +611,7 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
   a.href=url;a.download='hime-gacha-training-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),900);toast('写真を含むバックアップを書き出したよ');
  }catch(err){console.error('バックアップ失敗',err);toast('バックアップの書き出しに失敗しました。写真を確認してください')}
 });
- $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);await window.AppPhotos.importState(d);state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
+ $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);await window.AppPhotos.importState(d);state=d;lastResourceSnapshot={...state.resources};window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
 
  $('ledger-form').addEventListener('submit',e=>{e.preventDefault();const date=$('ledger-date').value,amount=int($('ledger-amount').value),type=$('ledger-type').value,src=$('ledger-source').value,note=$('ledger-note').value.trim();if(!amount||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return toast('日付と金額を確認してね');
  let label=type==='income'?'収入':'出費',source=src,debtAdded=0;
