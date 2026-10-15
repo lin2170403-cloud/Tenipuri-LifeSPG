@@ -99,9 +99,10 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./character-pages.css">
 <link rel="stylesheet" href="./fund-and-peek.css?v=20261015">
 <link rel="stylesheet" href="./vnext.css">
-<link rel="stylesheet" href="./daily-timeline.css?v=20261015-1">
-<link rel="stylesheet" href="./ui-refinement.css?v=20261015-8">
+<link rel="stylesheet" href="./daily-timeline.css?v=20261015-12">
+<link rel="stylesheet" href="./ui-refinement.css?v=20261015-12">
 <link rel="stylesheet" href="./morning-guanyin.css?v=20261015-1">
+<link rel="stylesheet" href="./app-stability.css?v=20261015-12">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -130,7 +131,7 @@ input,textarea,select{font-size:16px!important}
 <div class="gacha-pane" data-gacha-pane="reward"><div class="panel gacha-card"><div class="heading"><h2>🐱 姫猫ご褒美</h2><span class="badge"><span id="draw-count">0</span>回</span></div>
 <div class="drawbuttons"><button class="btn secondary" id="draw-one" type="button"><strong>1回</strong><span>💎 150</span></button><button class="btn" id="draw-eleven" type="button"><strong>10連＋1回</strong><span>💎 1,500</span></button></div>
 <div class="gacha-actions"><button class="ghost-link" data-page="exchange" type="button">引換所</button><button class="ghost-link" data-page="gacha-history" type="button">抽選履歴</button></div></div></div>
-<div class="gacha-pane active" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"></div></div></section><section aria-label="カレンダーとタイムライン" class="section" id="page-timeline"><div id="timeline-root"></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
+<div class="gacha-pane active" data-gacha-pane="hokkaido"><div class="panel" id="hkg-root" aria-label="北海道ガチャ"><p>北海道ロマンを読み込み中…</p></div></div></section><section aria-label="カレンダーとタイムライン" class="section" id="page-timeline"><div id="timeline-root"></div></section><section aria-label="お財布" class="section" id="page-wallet"><div class="page-head"><h2>お財布</h2><span class="page-mark">◈</span></div>
 <div class="segment-switch wallet-switch"><button class="segment-btn active" data-walletview="ledger" type="button">帳簿</button><button class="segment-btn" data-walletview="funds" type="button">ファンド</button></div>
 <div class="wallet-subpane active" id="wallet-ledger">
 <div class="panel"><div class="heading"><h2>収入・出費を記帳</h2><span class="badge">現金の記録</span></div>
@@ -217,16 +218,17 @@ input,textarea,select{font-size:16px!important}
 </div><script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" async></script>
 <script src="./hokkaido-reveal.js"></script>
-<script src="./hokkaido-gacha.js"></script>
+<script src="./hokkaido-gacha.js?v=20261015-12"></script>
 <script src="./morning-guanyin-data.js?v=20261015-1"></script>
 <script src="./morning-guanyin.js?v=20261015-1"></script>
-<script src="./gacha-navigation.js?v=20261015-10"></script>
+<script src="./gacha-navigation.js?v=20261015-12"></script>
 <script src="./character-stamps.js"></script>
-<script src="./app-settings.js?v=20261015-8"></script>
+<script src="./app-settings.js?v=20261015-12"></script>
 <script src="./date-system.js?v=20261015-1"></script>
-<script src="./daily-timeline.js?v=20261015-8"></script>
+<script src="./daily-timeline.js?v=20261015-12"></script>
 <script src="./character-profiles.js?v=20261015-8"></script>
 <script src="./ui-polish.js?v=20261015-8"></script>
+<script src="./language-fix.js?v=20261015-12"></script>
 <script>
 (()=>{'use strict';
 const STORAGE='hime-reward-v2', OLD_STORAGE='hime-reward-v1';
@@ -331,6 +333,7 @@ function log(kind,title,note=''){state.events.unshift({kind,title,note,at:timest
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
 let walletView='ledger', intakeView='training', charView='growth',charPage='growth',activeSubpage='',activeSheet='';
 function selectTab(id){if(id==='shop'){id='chars';charPage='shop'}
+ if(id==='gacha')switchGachaPage('hokkaido');
  activeTab=id;document.querySelectorAll('.bottom-tabs [data-tab]').forEach(t=>{const ok=t.dataset.tab===id;t.classList.toggle('active',ok);t.setAttribute('aria-selected',String(ok))});
  document.querySelectorAll('.app > .section').forEach(s=>s.classList.toggle('active',s.id==='page-'+id));
  switchCharPage(charPage);render();window.scrollTo(0,0)}

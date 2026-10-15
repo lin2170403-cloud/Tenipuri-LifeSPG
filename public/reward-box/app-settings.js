@@ -37,7 +37,7 @@ function apply(s){
  const x=sane(s),root=document.documentElement;
  const [accent,soft,pink]=COLORS[x.theme];
  const themeVars={
-  '--violet':accent,'--pale':soft,'--pink':pink,
+  '--violet':accent,'--pale':soft,'--pink':pink,'--bg':({lavender:'#f8f7fa',sakura:'#fff6f8',mint:'#f3faf7',sky:'#f4f9ff',neutral:'#f8f6f2'})[x.theme],'--ink':({lavender:'#283042',sakura:'#4d3444',mint:'#2b4640',sky:'#2c3e57',neutral:'#49433c'})[x.theme],'--muted':accent,'--line':accent+'30','--paper':'#fff',
   '--theme-accent':accent,'--theme-strong':accent,'--theme-soft':soft,
   '--theme-line':accent+'33','--theme-chart-fill':accent+'33',
   '--theme-target':pink,'--theme-focus':accent+'44',
@@ -47,6 +47,7 @@ function apply(s){
  Object.entries(themeVars).forEach(([key,value])=>root.style.setProperty(key,value));
  root.dataset.theme=x.theme;
  root.lang=x.language==='CN'?'zh-Hans':x.language==='EN'?'en':'ja';
+ document.querySelector('meta[name="theme-color"]')?.setAttribute('content',getComputedStyle(root).getPropertyValue('--bg').trim());
  const index=x.language==='CN'?0:x.language==='EN'?1:-1;
  for(const el of document.querySelectorAll('[data-i18n-text]')){
   const key=el.dataset.i18nText,translated=TERMS[key]?.[index];
