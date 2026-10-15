@@ -92,6 +92,14 @@ function fundModal(key,entry=null){
  });
 }
 function editTx(entry){fundModal(entry.to,entry)}
+function editOldFinanceEvent(index){
+ const event=a.state().events[index];if(!event)return;
+ showModal('<h3>以前の記録を訂正</h3><p class="wallet-up-sub">旧記録は資金の移動元が保存されていないため、残高を自動変更せず説明だけを編集します。</p><form id="wallet-legacy-edit"><label>タイトル<input name="title" maxlength="100" required value="'+esc(event.title||'')+'"></label><label>備考<textarea name="note" rows="3">'+esc(event.note||'')+'</textarea></label><button class="wallet-up-submit">説明を保存</button></form>');
+ modal.querySelector('form').addEventListener('submit',e=>{
+  e.preventDefault();event.title=e.target.elements.title.value.trim();event.note=e.target.elements.note.value.trim();
+  a.persist();close();a.render();a.toast('以前の履歴を訂正しました');
+ });
+}
 function editLedger(i){
  const s=a.state(),x=s.ledger[i];if(!x)return;
  ledgerEdit=i;
@@ -134,7 +142,9 @@ function render(){
  }
  const history=$$('fund-operation-history');
  if(history){
-  history.innerHTML=s.walletTransactions.length?s.walletTransactions.slice(0,150).map(t=>'<div class="wallet-history-row"><div><strong>'+esc(labelText(t.from==='outside'?'unallocated':t.from))+' → '+esc(labelText(t.to))+'</strong><small>'+esc(t.date)+' · '+esc(t.note||'備考なし')+'</small></div><b>'+yen(t.amount)+'</b><button type="button" data-wallet-edit="'+esc(t.id)+'">編集</button></div>').join(''):'<p class="minor">まだ振替・入金の記録がありません。</p>';
+  const recent=s.walletTransactions.slice(0,150).map(t=>'<div class="wallet-history-row"><div><strong>'+esc(t.from==='outside'?'🌱 外部入金':labelText(t.from))+' → '+esc(labelText(t.to))+'</strong><small>'+esc(t.date)+' · '+esc(t.note||'備考なし')+'</small></div><b>'+yen(t.amount)+'</b><button type="button" data-wallet-edit="'+esc(t.id)+'">編集</button></div>').join('');
+  const old=s.events.map((entry,i)=>({...entry,i})).filter(e=>['fund','debt','saving'].includes(e.kind)).slice(0,80);
+  history.innerHTML=(recent||'<p class="minor">まだ新しい資金移動の記録がありません。</p>')+(old.length?'<details class="wallet-old-history"><summary>以前の資金記録 '+old.length+'件</summary>'+old.map(e=>'<div class="wallet-history-row"><div><strong>'+esc(e.title||'旧記録')+'</strong><small>'+esc(e.note||'')+' · '+esc(e.at||'')+'</small></div><button type="button" data-wallet-legacy="'+e.i+'">編集</button></div>').join('')+'</details>':'');
  }
  const list=$$('ledger-list');
  if(list){
@@ -188,6 +198,7 @@ function bind(context){
  a=context;const grid=$$('fund-grid');
  grid?.addEventListener('click',e=>{const button=e.target.closest('[data-wallet-fund]');if(button)fundModal(button.dataset.walletFund)});
  $$('fund-operation-history')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-edit]');if(!b)return;const tx=a.state().walletTransactions.find(x=>x.id===b.dataset.walletEdit);if(tx)editTx(tx)});
+ $$('fund-operation-history')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-legacy]');if(b)editOldFinanceEvent(Number(b.dataset.walletLegacy))});
  $$('ledger-list')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-ledger]');if(b)editLedger(Number(b.dataset.walletLedger))});
  document.querySelectorAll('[data-point-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.pointView;renderPoints()}));
  $$('point-history-list')?.addEventListener('click',e=>{
