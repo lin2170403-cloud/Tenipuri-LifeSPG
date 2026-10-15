@@ -47,3 +47,31 @@ test('crop box can be moved and saved, and portrait remains after browser refres
  await page.evaluate(()=>window.CharacterStamps.open('niou'));
  await expect(page.locator('#cp-settings .cp-avatar-circle img')).toHaveAttribute('src',/^data:image\//);
 });
+
+
+test('theme and system language update without page refresh',async({page})=>{
+ await openApp(page);
+ const before=await page.evaluate(()=>document.documentElement.style.getPropertyValue('--theme-accent'));
+ await page.evaluate(()=>document.querySelector('[data-basic-theme="mint"]').click());
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.theme)).toBe('mint');
+ const after=await page.evaluate(()=>document.documentElement.style.getPropertyValue('--theme-accent'));
+ expect(after).not.toBe(before);
+ await page.evaluate(()=>document.querySelector('[data-basic-language="CN"]').click());
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.lang)).toBe('zh-Hans');
+ await page.evaluate(()=>document.querySelector('[data-basic-language="JP"]').click());
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.lang)).toBe('ja');
+});
+test('funds can be topped up with immediately visible transaction history',async({page})=>{
+ await openApp(page);
+ await page.locator('.bottom-tabs [data-tab="wallet"]').click();
+ const cards=page.locator('#fund-grid [data-wallet-fund]');
+ await expect(cards).toHaveCount(9);
+ await page.locator('#fund-grid [data-wallet-fund="unallocated"]').click();
+ const popup=page.locator('.wallet-up-modal');
+ await expect(popup).toBeVisible();
+ await popup.locator('input[name="amount"]').fill('200');
+ await popup.locator('[type="submit"]').click();
+ await expect(popup).toHaveCount(0);
+ await expect(page.locator('#fund-grid [data-wallet-fund="unallocated"]')).toContainText('200円');
+ await expect(page.locator('#fund-operation-history')).toContainText('200円');
+});
