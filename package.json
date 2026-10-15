@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:reward-box": "node --test tests/reward-box-integrity.test.mjs"
+    "test:reward-box": "node --test tests/reward-box-integrity.test.mjs",
+    "test:ui": "playwright test --config=tests/playwright.config.mjs"
   },
   "dependencies": {
     "localforage": "^1.10.0",
@@ -20,6 +21,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "oxlint": "^1.69.0",
-    "vite": "^8.1.0"
+    "vite": "^8.1.0",
+    "@playwright/test": "^1.58.2"
   }
 }
