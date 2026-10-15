@@ -148,7 +148,7 @@ function fileChosen(kind,f){
  try{url=URL.createObjectURL(f)}catch(e){return api.toast('画像ファイルを開けませんでした')}
  const image=new Image();let completed=false;
  const fail=()=>{if(completed)return;completed=true;URL.revokeObjectURL(url);api.toast('画像を読み込めません。JPEGかPNGで試してください')};
- image.onload=()=>{if(completed)return;completed=true;URL.revokeObjectURL(url);try{crop(kind,image)}catch(error){console.error(error);api.toast('画像を開けませんでした')}};
+ image.onload=()=>{if(completed)return;completed=true;try{crop(kind,image)}catch(error){console.error(error);api.toast('画像を開けませんでした')}finally{URL.revokeObjectURL(url)}};
  image.onerror=fail;image.src=url;
 }
 function bind(context) {
