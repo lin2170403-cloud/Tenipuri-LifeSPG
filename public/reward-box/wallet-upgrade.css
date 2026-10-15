@@ -1,0 +1,74 @@
+/* Funds, centered sheets, character shop history, mobile-safe inputs */
+.wallet-old-form,[hidden]{display:none!important}
+#page-wallet .ledger-overview{display:none!important}
+.fund-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#fund-grid .wallet-fund{display:flex;flex-direction:column;align-items:flex-start;text-align:left;
+ width:100%;min-width:0;min-height:125px;box-sizing:border-box;cursor:pointer;
+ border:1px solid var(--theme-line);border-radius:14px;background:#fbfafc;
+ color:var(--ink);padding:11px 10px;gap:5px;transition:box-shadow .2s;
+}
+#fund-grid .wallet-fund .emoji{font-size:19px;line-height:1.2}
+#fund-grid .wallet-fund strong{font-size:13px;overflow-wrap:anywhere;line-height:1.4}
+#fund-grid .wallet-fund .yen{font-weight:750;font-size:17px;line-height:1.3}
+#fund-grid .wallet-fund .tiny{font-size:11px;line-height:1.45;margin-top:auto;white-space:normal}
+#fund-grid .wallet-fund[data-wallet-fund=date]{background:#fbfafc;border-color:var(--theme-line)}
+#fund-grid .wallet-fund.wallet-debt-alert{border:2px solid #c43e50;background:#fff2f3;color:#a51e36}
+#fund-grid .wallet-fund:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}
+.wallet-up-modal{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;
+ overflow:hidden;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));
+ background:#161a2c8c}
+.wallet-up-dialog{position:relative;width:min(100%,490px);box-sizing:border-box;max-height:86dvh;overflow-y:auto;
+ overscroll-behavior:contain;padding:21px 18px;background:#fff;border-radius:21px;box-shadow:0 12px 40px #13132642}
+.wallet-up-close{position:absolute;right:12px;top:10px;width:38px;height:38px;border:0;border-radius:50%;
+ background:var(--theme-soft);color:var(--theme-accent);font-size:24px}
+.wallet-up-dialog h3{font-size:19px;margin:0 40px 10px 0}
+.wallet-up-dialog form{display:grid;gap:13px}
+.wallet-up-dialog label{font-size:13px;font-weight:750;display:block}
+.wallet-up-dialog input,.wallet-up-dialog select,.wallet-up-dialog textarea{display:block;box-sizing:border-box;
+ width:100%;min-width:0;max-width:100%;margin-top:5px;padding:11px 12px;
+ border:1px solid var(--theme-line);border-radius:9px;background:#faf9fb;font-size:16px}
+.wallet-up-dialog input[readonly]{background:#f3f3f6}
+.wallet-up-dialog .wallet-up-submit{width:100%;padding:13px;border:0;border-radius:10px;
+ background:var(--theme-accent);color:#fff;font-weight:800;font-size:15px}
+.wallet-up-dialog .wallet-up-submit:disabled{opacity:.55}
+.wallet-up-sub{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 13px}
+.wallet-history-row{display:flex;justify-content:space-between;align-items:center;gap:9px;
+ border-bottom:1px solid var(--theme-line);padding:11px 1px;min-width:0}
+.wallet-history-row>div{min-width:0;flex:1}
+.wallet-history-row strong{font-size:12px;display:block;overflow-wrap:anywhere}
+.wallet-history-row small{font-size:11px;display:block;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.wallet-history-row>b{font-size:12px;max-width:45%;overflow-wrap:anywhere;text-align:right}
+.wallet-history-row button,.wallet-ledger-entry>button{border:1px solid var(--theme-line);background:var(--theme-soft);
+ color:var(--theme-accent);border-radius:8px;min-width:44px;padding:8px;font-size:12px}
+.wallet-ledger-entry{display:flex;align-items:center;gap:9px}
+.wallet-ledger-entry>div:first-child{flex:1;min-width:0}
+.wallet-ledger-entry .sum{flex:0 0 auto}
+#page-chars .chars-route{margin-top:-7px;margin-bottom:8px}
+.point-history-panel{margin-top:8px}
+.point-history-toggle{display:flex;gap:5px;background:var(--theme-soft);padding:5px;border-radius:12px;margin:10px 0}
+.point-history-toggle button{flex:1;background:transparent;border:0;border-radius:9px;padding:10px;color:var(--theme-accent)}
+.point-history-toggle button.active{background:#fff;box-shadow:0 2px 8px #0001;font-weight:800}
+.point-history-panel details{margin-top:10px;border-top:1px solid var(--theme-line);padding-top:9px;font-size:12px}
+.point-history-panel summary{cursor:pointer}
+.sheet-overlay.open{display:flex!important;align-items:center!important;justify-content:center!important}
+.sheet-overlay.open .sheet-content{height:auto!important;min-height:0!important;max-height:82dvh!important;
+ width:min(100%,570px)!important;align-self:center!important;overflow-y:auto!important}
+.sheet-overlay :is(input,select,textarea){font-size:16px!important;max-width:100%;min-width:0;box-sizing:border-box}
+:where(.formrow,.field,.panel){min-width:0}
+input[type=date],input[type=time]{min-width:0!important;max-width:100%!important;box-sizing:border-box}
+@media(max-width:375px){#fund-grid .wallet-fund{padding:9px 6px;min-height:125px}#fund-grid .wallet-fund strong{font-size:11px}
+#fund-grid .wallet-fund .yen{font-size:15px}#fund-grid .wallet-fund .tiny{font-size:10px}}
+
+/* WebKit date/time intrinsic minimums must not widen mobile editors */
+.tl-modal,.tl-editor,.tl-editor #tl-post-form,.tl-editor .tl-editor-meta,
+.tl-editor .tl-editor-meta label{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+.tl-editor .tl-editor-meta{grid-template-columns:minmax(0,1fr)!important;overflow-x:hidden!important}
+.tl-editor .tl-editor-meta input:is([type=date],[type=time]){
+ -webkit-appearance:none;appearance:none;min-width:0!important;max-width:100%!important;
+ width:100%!important;inline-size:100%!important;overflow:hidden!important;
+ font-size:16px!important;box-sizing:border-box!important;
+}
+.tl-editor .tl-editor-meta input::-webkit-date-and-time-value{min-width:0!important;text-align:center!important}
+.tl-editor .tl-editor-meta input::-webkit-datetime-edit{min-width:0;max-width:100%;overflow:hidden}
+.wallet-old-history{margin-top:12px;padding-top:10px;border-top:1px solid var(--theme-line)}
+.wallet-old-history summary{cursor:pointer;font-size:12px;color:var(--theme-accent)}
