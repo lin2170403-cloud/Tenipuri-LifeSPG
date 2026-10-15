@@ -115,6 +115,7 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./app-stability.css?v=20261015-12">
 <link rel="stylesheet" href="./ios-editor-fixes.css?v=20261016-2">
 <link rel="stylesheet" href="./wallet-upgrade.css?v=20261015-22">
+<link rel="stylesheet" href="./image-editor.css?v=20261016-3">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -130,11 +131,8 @@ input,textarea,select{font-size:16px!important}
 </div>
 </div></header>
 <main class="app"><div hidden="" id="legacy-stats"><span id="stat-wallet"></span><span id="stat-vouchers"></span><span id="display-date"></span></div><div aria-hidden="true" class="sr-only"><span id="stat-vouchers"></span><span id="display-date"></span></div>
-<section aria-label="12人のキャラ育成" class="section active" id="page-chars"><div id="cp-home"></div><div class="segment-switch chars-route" role="tablist"><button class="segment-btn active" data-charpage="growth" type="button">育成</button><button class="segment-btn" data-charpage="shop" type="button">ショップ</button><button class="segment-btn" data-charpage="date" type="button">デート</button></div><div class="char-subpane active" data-charpage="growth"><div class="page-head"><div><div class="page-kicker">TRAINING</div><h2>育成</h2></div><span class="page-mark">♧</span></div>
-<details class="compact-detail res-detail"><summary>育成pt・ニャンコイン残高 <span class="disclosure-arrow">⌄</span></summary><div class="details-body"><div aria-label="育成資源残高" class="resource-strip" id="resource-strip"></div></div></details><div class="panel"><div class="heading"><div><h2>12人の王子たち</h2><p class="small dim">選んで育成する · 共通資源を自由に配分</p></div><span class="badge" id="clear-count">0/12 完全育成</span></div><div class="charlist" id="char-list"></div><div class="notice" style="margin-top:10px">段階昇格は15属性すべて達成。第6段階＋全スキル習得＋好感度1,500で完全クリア。昇格・スキル習得で好感度が自動上昇。</div></div><div class="panel"><div id="character-detail"></div></div></div><section aria-label="ニャンコインショップ" class="char-subpane" data-charpage="shop" id="page-shop">
-<div class="columns"><div class="panel"><div class="heading"><div><h2>ニャンコインショップ</h2><p class="small dim">贈り物で好感度を上げる</p></div><span class="badge" id="shop-coins">0 🐱</span></div><div class="field"><label for="shop-recipient">贈る相手</label><select class="selector" id="shop-recipient"></select></div><div class="shop-filters" id="shop-filters"><button class="subtab active" data-shop="special" type="button">🎀 スペシャル</button><button class="subtab" data-shop="food" type="button">🍽️ フード</button><button class="subtab" data-shop="fashion" type="button">👔 ファッション</button></div><div class="notice" id="shop-explain"></div></div>
-<div class="panel"><div class="heading"><div><h2 id="shop-heading">スペシャルギフト</h2><p class="small dim" id="shop-subtitle">選択したキャラ専用の商品</p></div><span class="badge" id="shop-item-count">0種</span></div><div class="shop-list" id="shop-items"></div></div></div>
-<div class="panel point-history-panel">
+<section aria-label="12人のキャラ育成" class="section active" id="page-chars"><div id="cp-home"></div>
+<div id="canonical-point-history"><div class="panel point-history-panel">
  <div class="heading"><h2>育成ポイント履歴</h2></div>
  <div class="point-history-toggle">
   <button type="button" data-point-view="earned" class="active" aria-pressed="true">取得履歴</button>
@@ -143,6 +141,10 @@ input,textarea,select{font-size:16px!important}
  <div id="point-history-list"></div>
  <details><summary>以前の記録を表示</summary><div id="point-old-history"></div></details>
 </div>
+</div><div class="segment-switch chars-route" role="tablist"><button class="segment-btn active" data-charpage="growth" type="button">育成</button><button class="segment-btn" data-charpage="shop" type="button">ショップ</button><button class="segment-btn" data-charpage="date" type="button">デート</button></div><div class="char-subpane active" data-charpage="growth"><div class="page-head"><div><div class="page-kicker">TRAINING</div><h2>育成</h2></div><span class="page-mark">♧</span></div>
+<details class="compact-detail res-detail"><summary>育成pt・ニャンコイン残高 <span class="disclosure-arrow">⌄</span></summary><div class="details-body"><div aria-label="育成資源残高" class="resource-strip" id="resource-strip"></div></div></details><div class="panel"><div class="heading"><div><h2>12人の王子たち</h2><p class="small dim">選んで育成する · 共通資源を自由に配分</p></div><span class="badge" id="clear-count">0/12 完全育成</span></div><div class="charlist" id="char-list"></div><div class="notice" style="margin-top:10px">段階昇格は15属性すべて達成。第6段階＋全スキル習得＋好感度1,500で完全クリア。昇格・スキル習得で好感度が自動上昇。</div></div><div class="panel"><div id="character-detail"></div></div></div><section aria-label="ニャンコインショップ" class="char-subpane" data-charpage="shop" id="page-shop">
+<div class="columns"><div class="panel"><div class="heading"><div><h2>ニャンコインショップ</h2><p class="small dim">贈り物で好感度を上げる</p></div><span class="badge" id="shop-coins">0 🐱</span></div><div class="field"><label for="shop-recipient">贈る相手</label><select class="selector" id="shop-recipient"></select></div><div class="shop-filters" id="shop-filters"><button class="subtab active" data-shop="special" type="button">🎀 スペシャル</button><button class="subtab" data-shop="food" type="button">🍽️ フード</button><button class="subtab" data-shop="fashion" type="button">👔 ファッション</button></div><div class="notice" id="shop-explain"></div></div>
+<div class="panel"><div class="heading"><div><h2 id="shop-heading">スペシャルギフト</h2><p class="small dim" id="shop-subtitle">選択したキャラ専用の商品</p></div><span class="badge" id="shop-item-count">0種</span></div><div class="shop-list" id="shop-items"></div></div></div>
 </section><div class="char-subpane" data-charpage="date"><div class="panel"><div class="heading"><h2>デート</h2><span class="badge">準備中</span></div><p class="minor">デート資金はお財布でロック確保できます。デート企画・必要条件・専用ストーリーは次回実装します。</p><button class="btn secondary" data-tab="wallet" type="button">デート資金を確認する</button></div></div></section><section aria-label="ガチャ" class="section" id="page-gacha"><div class="page-head"><h2>ガチャ</h2><span class="page-mark">✦</span></div>
 <div class="segment-switch gacha-switch" role="tablist" aria-label="ガチャ選択">
 <button type="button" class="segment-btn" role="tab" aria-selected="false" data-gacha-tab="morning">朝の運試し</button>
@@ -244,7 +246,9 @@ input,textarea,select{font-size:16px!important}
 <script src="./morning-guanyin.js?v=20261015-1"></script>
 <script src="./gacha-navigation.js?v=20261015-16"></script>
 <script src="./app-photos.js?v=20261016-2"></script>
-<script src="./character-stamps.js?v=20261016-2"></script>
+<script src="./image-editor.js?v=20261016-3"></script>
+<script src="./resource-ledger.js?v=20261016-3"></script>
+<script src="./character-stamps.js?v=20261016-3"></script>
 <script src="./app-settings.js?v=20261015-12"></script>
 <script src="./date-system.js?v=20261015-1"></script>
 <script src="./daily-timeline.js?v=20261015-20"></script>
@@ -353,16 +357,23 @@ function migrate(raw){const s=defaultState();if(!raw||typeof raw!=='object'||![1
 function readState(){const raw=localStorage.getItem(STORAGE)||localStorage.getItem(OLD_STORAGE);if(!raw)return defaultState();try{return migrate(JSON.parse(raw))}catch(e){alert('記録を読み込めません。既存データは保護されています。\n'+e.message);throw e}}
 let state=readState(),activeTab='chars',selectedChar='niou',shopChar='niou',shopTab='special',attrGroup='physical',fundSign='add',toastTimer=null;
 let lastResourceSnapshot={...state.resources};
+window.PointLedger.ensure(state);
 function persist(){
- const delta={};for(const [key,value] of Object.entries(state.resources)){const prev=lastResourceSnapshot[key]??0;if(value!==prev)delta[key]=value-prev;}
- const positives=Object.fromEntries(Object.entries(delta).filter(([,v])=>v>0));
- const negatives=Object.fromEntries(Object.entries(delta).filter(([,v])=>v<0));
- const last=state.events[0],heading=last?.title||'ポイント変動';
- if(Object.keys(positives).length)state.pointHistory.unshift({id:'pt-'+Date.now()+'-in',kind:'earned',title:heading,delta:positives,at:timestamp()});
- if(Object.keys(negatives).length)state.pointHistory.unshift({id:'pt-'+Date.now()+'-out',kind:last?.kind==='training'?'adjustment':'spent',title:heading,delta:negatives,at:timestamp()});
- state.pointHistory=state.pointHistory.slice(0,2000);
- try{localStorage.setItem(STORAGE,JSON.stringify(state));lastResourceSnapshot={...state.resources}}
- catch(e){if(Object.keys(positives).length||Object.keys(negatives).length)state.pointHistory.splice(0,Object.keys(positives).length&&Object.keys(negatives).length?2:1);throw e}
+ const journal=window.PointLedger.ensure(state);
+ const before={...lastResourceSnapshot};
+ const marker=state.events[0]||{};
+ const added=window.PointLedger.record(state,before,{
+   source:marker.kind||'record',title:marker.title||'育成ポイント変動',
+   note:marker.note||'',reference:marker.id||'',
+   correction:marker.kind==='training'&&Object.keys(state.trainingDaily||{}).length>0
+ });
+ try{
+   localStorage.setItem(STORAGE,JSON.stringify(state));
+   lastResourceSnapshot={...state.resources};
+ }catch(error){
+   window.PointLedger.revert(state,added);
+   throw error;
+ }
 }
 window.HokkaidoGacha.reconcile(state);
 try{window.HokkaidoGacha.render(state)}catch(error){
