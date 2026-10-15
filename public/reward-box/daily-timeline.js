@@ -6,6 +6,8 @@ const parts=(d)=>{const [y,m]=d.split('-').map(Number);return {first:new Date(Da
 const nextMonth=(m,delta)=>{const [y,mon]=m.split('-').map(Number),v=new Date(Date.UTC(y,mon-1+delta,1));return v.toISOString().slice(0,7)};
 function migrate(s){if(!Array.isArray(s.timelinePosts))s.timelinePosts=[];s.timelinePosts=s.timelinePosts.filter(p=>p&&typeof p.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(p.date));}
 let api=null,chosen=nowJST().slice(0,10),month=chosen.slice(0,7),modal=null,activeImages=[],editing=null,pendingImages=0,lastRange=null;
+let calendarCompact=false;
+try{calendarCompact=localStorage.getItem('hime-calendar-compact')==='1'}catch(_){}
 function clean(html){
  const input=document.createElement('template');input.innerHTML=String(html||'').slice(0,100000);
  const allowed=new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','SPAN','DIV','P','BR']);
@@ -36,11 +38,13 @@ function render(s){
  migrate(s);
  const {first,days}=parts(month);
  const marked=new Set(s.timelinePosts.map(p=>p.date));
- const grid=Array(first).fill('<div></div>').join('')+Array.from({length:days},(_,i)=>{
-  const d=month+'-'+String(i+1).padStart(2,'0');
-  return '<button type="button" class="tl-day '+(d===chosen?'selected ':'')+(d===nowJST().slice(0,10)?'today':'')+'" data-tl-day="'+d+'" aria-pressed="'+(d===chosen?'true':'false')+'"><b>'+(i+1)+'</b>'+(marked.has(d)?'<i aria-label="投稿あり">●</i>':'')+'</button>';
- }).join('');
- root.innerHTML='<div class="tl-wrap"><div class="tl-calendar"><div class="tl-month"><button data-tl-month="-1" type="button" aria-label="前の月">‹</button><strong>'+month.replace('-','年')+'月</strong><button data-tl-month="1" type="button" aria-label="次の月">›</button></div><div class="tl-week">'+['日','月','火','水','木','金','土'].map(d=>'<span>'+d+'</span>').join('')+'</div><div class="tl-days">'+grid+'</div></div>'+
+ const tile=d=>'<button type="button" class="tl-day '+(d===chosen?'selected ':'')+(d===nowJST().slice(0,10)?'today ':'')+(d.slice(0,7)!==month?'outside-month':'')+'" data-tl-day="'+d+'" aria-pressed="'+(d===chosen?'true':'false')+'"><b>'+Number(d.slice(8,10))+'</b>'+(marked.has(d)?'<i aria-label="投稿あり">●</i>':'')+'</button>';
+ const weekStart=new Date(chosen+'T00:00:00Z');
+ weekStart.setUTCDate(weekStart.getUTCDate()-weekStart.getUTCDay());
+ const weekDates=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setUTCDate(d.getUTCDate()+i);return d.toISOString().slice(0,10)});
+ const grid=calendarCompact?weekDates.map(tile).join(''):Array(first).fill('<div class="tl-blank"></div>').join('')+
+  Array.from({length:days},(_,i)=>tile(month+'-'+String(i+1).padStart(2,'0'))).join('');
+ root.innerHTML='<div class="tl-wrap"><div class="tl-calendar '+(calendarCompact?'is-compact':'is-month')+'"><div class="tl-month"><button data-tl-month="-1" type="button" aria-label="'+(calendarCompact?'前の週':'前の月')+'">‹</button><strong>'+(calendarCompact?chosen.replace(/^(\\d{4})-(\\d{2})-(\\d{2})$/,(_,y,m,d)=>y+'年'+Number(m)+'月'+Number(d)+'日'):month.replace('-','年')+'月')+'</strong><button data-tl-month="1" type="button" aria-label="'+(calendarCompact?'次の週':'次の月')+'">›</button><button class="tl-toggle" data-tl-toggle type="button" aria-expanded="'+(!calendarCompact)+'" aria-label="'+(calendarCompact?'月表示に展開':'週表示に折りたたむ')+'" title="'+(calendarCompact?'月表示':'週表示')+'">'+(calendarCompact?'▦':'⌃')+'</button></div><div class="tl-week">'+['日','月','火','水','木','金','土'].map(d=>'<span>'+d+'</span>').join('')+'</div><div class="tl-days">'+grid+'</div></div>'+
  '<div class="tl-timeline"><div class="tl-timeline-head"><div><small>MY TIMELINE</small><h3>'+E(chosen)+' のタイムライン</h3></div><button type="button" class="tl-compose" data-tl-new>＋ 投稿する</button></div>'+
  (posts(s,chosen).map(p=>{
  const isReady=visible(p),safeImages=(p.images||[]).filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
@@ -158,8 +162,9 @@ function bind(context){
  migrate(api.state());
  root.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.tlMonth){month=nextMonth(month,Number(b.dataset.tlMonth));render(api.state());return}
-  if(b.dataset.tlDay){chosen=b.dataset.tlDay;render(api.state());return}
+  if(b.dataset.tlMonth){if(calendarCompact){const d=new Date(chosen+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+7*Number(b.dataset.tlMonth));chosen=d.toISOString().slice(0,10);month=chosen.slice(0,7)}else month=nextMonth(month,Number(b.dataset.tlMonth));render(api.state());return}
+   if(b.hasAttribute('data-tl-toggle')){calendarCompact=!calendarCompact;month=chosen.slice(0,7);try{localStorage.setItem('hime-calendar-compact',calendarCompact?'1':'0')}catch(_){}render(api.state());return}
+  if(b.dataset.tlDay){chosen=b.dataset.tlDay;month=chosen.slice(0,7);render(api.state());return}
   if(b.hasAttribute('data-tl-new')){openEditor(null);return}
   if(b.dataset.tlEdit){openEditor(api.state().timelinePosts.find(p=>p.id===b.dataset.tlEdit));}
  });
