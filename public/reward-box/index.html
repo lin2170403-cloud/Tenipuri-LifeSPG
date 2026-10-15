@@ -103,6 +103,7 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./ui-refinement.css?v=20261015-12">
 <link rel="stylesheet" href="./morning-guanyin.css?v=20261015-1">
 <link rel="stylesheet" href="./app-stability.css?v=20261015-12">
+<link rel="stylesheet" href="./ios-editor-fixes.css?v=20261015-20">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -222,10 +223,11 @@ input,textarea,select{font-size:16px!important}
 <script src="./morning-guanyin-data.js?v=20261015-1"></script>
 <script src="./morning-guanyin.js?v=20261015-1"></script>
 <script src="./gacha-navigation.js?v=20261015-16"></script>
-<script src="./character-stamps.js"></script>
+<script src="./app-photos.js?v=20261015-20"></script>
+<script src="./character-stamps.js?v=20261015-20"></script>
 <script src="./app-settings.js?v=20261015-12"></script>
 <script src="./date-system.js?v=20261015-1"></script>
-<script src="./daily-timeline.js?v=20261015-16"></script>
+<script src="./daily-timeline.js?v=20261015-20"></script>
 <script src="./character-profiles.js?v=20261015-8"></script>
 <!-- Keep native select on iOS; custom select caused a second popup. -->
 <script src="./language-fix.js?v=20261015-12"></script>
@@ -579,12 +581,13 @@ function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel
  $('export-btn').addEventListener('click',async()=>{
  try{
   const backup=await window.DailyTimeline.exportPhotos(state);
+  await window.AppPhotos.exportState(backup);
   backup.exportedAt=new Date().toISOString();
   const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
   a.href=url;a.download='hime-gacha-training-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),900);toast('写真を含むバックアップを書き出したよ');
  }catch(err){console.error('バックアップ失敗',err);toast('バックアップの書き出しに失敗しました。写真を確認してください')}
 });
- $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
+ $('import-btn').addEventListener('click',()=>$('import-file').click());$('import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=migrate(JSON.parse(await f.text()));if(!window.confirm('現在の記録をこのバックアップで置き換えますか？'))return;await window.DailyTimeline.importPhotos(d);await window.AppPhotos.importState(d);state=d;window.HokkaidoGacha.reconcile(state);window.CharacterStamps.migrate(state,CHARS);window.DateSystem.migrate(state,CHARS);window.DailyTimeline.migrate(state);window.AppSettings.sane(state);persist();render();toast('バックアップを復元したよ')}catch(err){toast('復元できませんでした：'+err.message)}finally{e.target.value=''}});
 
  $('ledger-form').addEventListener('submit',e=>{e.preventDefault();const date=$('ledger-date').value,amount=int($('ledger-amount').value),type=$('ledger-type').value,src=$('ledger-source').value,note=$('ledger-note').value.trim();if(!amount||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return toast('日付と金額を確認してね');
  let label=type==='income'?'収入':'出費',source=src,debtAdded=0;
