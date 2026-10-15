@@ -185,7 +185,7 @@ function editTraining(date){
  });
 }
 function editAudit(id){
- const entry=a.state().pointHistory.find(p=>p.id===id);if(!entry)return;
+ const state=a.state(),entry=state.resourceJournal?.entries.find(p=>p.id===id)||state.pointHistory.find(p=>p.id===id);if(!entry)return;
  showModal('<h3>履歴のメモを修正</h3><p class="wallet-up-sub">消費したポイント量はキャラ育成・スキルと連動するため、履歴から直接増減できません。</p><form id="point-audit-edit"><label>説明<textarea name="title" rows="3" maxlength="160">'+esc(entry.title||'')+'</textarea></label><button class="wallet-up-submit">説明を保存</button></form>');
  modal.querySelector('form').addEventListener('submit',e=>{
   e.preventDefault();entry.title=e.target.elements.title.value.trim();
@@ -194,12 +194,14 @@ function editAudit(id){
 }
 function renderPoints(){
  const s=a.state(),root=$$('point-history-list');if(!root)return;
- const events=Array.isArray(s.pointHistory)?s.pointHistory:[];
- const rows=events.filter(item=>view==='earned'?['earned','adjustment'].includes(item.kind):item.kind==='spent').slice(0,150);
+ const prior=Array.isArray(s.pointHistory)?s.pointHistory:[];
+ const journalEntries=window.PointLedger?.entries(s,view)||[];
+ const legacyEntries=prior.filter(item=>view==='earned'?['earned','adjustment'].includes(item.kind):item.kind==='spent');
+ const rows=[...journalEntries,...legacyEntries].slice(0,150);
  const daily=view==='earned'?Object.entries(s.trainingDaily).sort((x,y)=>y[0].localeCompare(x[0])).slice(0,60).map(([date,item])=>
  '<div class="wallet-history-row"><div><strong>取得記録｜'+esc(date)+'</strong><small>基礎 '+(['physical','mental','technical'].reduce((n,k)=>n+(Number(item[k])||0),0))+' / 悟性 '+(item.wisdom||0)+' / 工夫 '+(item.ingenuity||0)+' / 🐱 '+(item.coins||0)+'</small></div><button type="button" data-point-training="'+esc(date)+'">編集</button></div>').join(''):'';
- const journal=rows.map(item=>'<div class="wallet-history-row"><div><strong>'+esc(item.title||'ポイント変動')+'</strong><small>'+esc(item.at||'')+'</small></div><b>'+Object.entries(item.delta||{}).map(([k,n])=>esc(k)+' '+(n>0?'+':'')+n).join(' · ')+'</b><button type="button" data-point-audit="'+esc(item.id)+'">編集</button></div>').join('');
- root.innerHTML=daily+journal||'<p class="minor">この記録方式の導入後は、'+(view==='earned'?'取得':'使用')+'履歴がここに表示されます。過去分は下の従来履歴で確認できます。</p>';
+ const journal=rows.map(item=>'<div class="wallet-history-row"><div><strong>'+esc(item.title||'ポイント変動')+'</strong><small>'+esc(item.at||'')+'</small></div><b>'+Object.entries(item.changes||item.delta||{}).filter(([,n])=>view==='earned'?n>0:n<0).map(([k,n])=>esc(k)+' '+(n>0?'+':'')+n).join(' · ')+'</b><button type="button" data-point-audit="'+esc(item.id)+'">編集</button></div>').join('');
+ root.innerHTML=daily+journal||'<p class="minor">この記録方式の導入後は、'+(view==='earned'?'取得':'使用')+'履歴がここに表示されます。過去分は「以前の記録」を確認してください。</p>';
  const legacy=$$('point-old-history');
  if(legacy)legacy.innerHTML=s.events.filter(e=>view==='earned'?['training','daily','gacha'].includes(e.kind):['allocation','skill','gift','gacha'].includes(e.kind)).slice(0,80).map(e=>'<div class="wallet-history-row"><div><strong>'+esc(e.title||e.kind)+'</strong><small>'+esc(e.note||'')+' · '+esc(e.at||'')+'</small></div></div>').join('')||'';
  document.querySelectorAll('[data-point-view]').forEach(btn=>{btn.classList.toggle('active',btn.dataset.pointView===view);btn.setAttribute('aria-pressed',String(btn.dataset.pointView===view))});

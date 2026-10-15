@@ -1,5 +1,6 @@
 /* Character profiles and stamps: mobile-first, legacy markup retained but hidden. */
-#page-chars > :not(#cp-home){display:none!important}
+#page-chars > .chars-route,#page-chars > .char-subpane{display:none!important}
+#page-chars > #canonical-point-history{display:block!important;margin:12px 0 24px}
 #cp-home{padding:8px 0 22px}
 .cp-toolbar{display:flex;align-items:center;gap:8px;margin:1px 0 17px}
 .cp-resources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;flex:1;min-width:0}

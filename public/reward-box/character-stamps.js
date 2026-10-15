@@ -76,10 +76,13 @@ function protect(s,c,slot=null) {
  b.days[target]={protected:true,time:new Date().toISOString()};
  api.log('stamp',kind+'を使用',c+' '+target);api.save();api.toast('炎を守りました 🔥');
 }
+function refreshPhotos(root){
+ window.AppPhotos?.hydrate(root).catch(err=>console.warn('画像表示を更新できません:',err));
+}
 function renderSettings(s){
  const root=document.getElementById('cp-settings');if(!root)return;
  if(!chosen){root.innerHTML=`<h3>12人のキャラとスタンプ帳</h3><p class="cp-help">写真とスタンプ帳を設定。1人につき複数冊登録でき、同時に使えるのは1冊だけ。</p>
- <div class="cp-set-grid">${api.chars.map(c=>`<button data-cp-person="${c.id}"><div>${img(conf(s,c.id).avatar)||esc(c.name)}</div><small>${esc(c.name)}</small><em>${conf(s,c.id).books.length}冊</em></button>`).join('')}</div>`;return;}
+ <div class="cp-set-grid">${api.chars.map(c=>`<button data-cp-person="${c.id}"><div>${img(conf(s,c.id).avatar)||esc(c.name)}</div><small>${esc(c.name)}</small><em>${conf(s,c.id).books.length}冊</em></button>`).join('')}</div>`;refreshPhotos(root);return;}
  const c=api.chars.find(x=>x.id===chosen),x=conf(s,chosen);
  root.innerHTML=`<button data-cp-go-back class="cp-back">‹ 12人の設定へ</button><div class="cp-avatar-editor">
  <div class="cp-avatar-circle">${img(x.avatar)||esc(c.name)}</div><div><h3>${esc(c.name)}</h3><label class="cp-file-picker cp-action">📷 写真をアップロード<input type="file" data-cp-file="avatar" accept="image/*,.heic,.heif"></label></div></div>
@@ -95,7 +98,7 @@ function renderSettings(s){
  <p class="cp-help">合計100%以下。余りは通常の応援セリフになります。</p>
  ${draft.messages.map((m,i)=>`<div class="cp-msg"><textarea data-cp-msg="${i}" rows="2">${esc(m.text)}</textarea><label><input type="number" data-cp-prob="${i}" min="0" max="100" step="1" value="${m.chance}">%</label><button data-cp-delmsg="${i}" type="button">×</button></div>`).join('')}
  <p class="cp-help">現在の合計 ${draft.messages.reduce((n,m)=>n+m.chance,0)}%</p>
- <div class="cp-controls"><button class="cp-primary" type="submit">保存</button><button data-cp-cancel type="button">取消</button></div></form>`:''}`;
+ <div class="cp-controls"><button class="cp-primary" type="submit">保存</button><button data-cp-cancel type="button">取消</button></div></form>`:''}`; refreshPhotos(root);
 }
 function beginEdit(s,key){
  const b=key==='new'?{name:'',note:'',header:'',stamp:'',messages:[{text:'今日もよく頑張ったね。',chance:100}]}:conf(s,chosen).books.find(b=>b.id===key);
@@ -110,145 +113,47 @@ function saveEdit(s,form){
  else Object.assign(x.books.find(b=>b.id===edit),data);
  edit=null;api.save();api.toast('打刻帳を保存しました');
 }
-/* Interactive cropper: drag image under the visible mask, pinch to zoom.
-   The exported crop matches the on-screen fixed crop frame. */
-function crop(kind,imgObj,releaseSource){
- const subject=chosen;
- const isHeader=kind==='header',isStamp=kind==='stamp';
- const title=isHeader?'ヘッダー':isStamp?'スタンプ':'キャラのアイコン';
- const host=document.createElement('div');host.className='cp-crop-overlay cp-crop-v2';
- host.innerHTML='<div class="cp-crop-modal cp-crop-dialog" role="dialog" aria-modal="true" aria-label="画像を切り抜く">'
-  +'<h3>'+title+'の切り抜き</h3>'
-  +'<p class="cp-crop-help">写真を指で動かして位置を調整。2本指で拡大・縮小できます。</p>'
-  +'<div class="cp-crop-stage" aria-label="ドラッグして画像の位置を調整">'
-  +'<img class="cp-crop-photo" alt="切り抜く写真" draggable="false">'
-  +'<div class="cp-crop-frame'+(isStamp?' is-round':'')+'" aria-hidden="true"></div></div>'
-  +'<div class="cp-crop-actions"><button type="button" data-cp-zoom-out aria-label="縮小">−</button><span>拡大・縮小</span><button type="button" data-cp-zoom-in aria-label="拡大">＋</button></div>'
-  +'<div class="cp-controls"><button type="button" data-cp-crop-cancel>キャンセル</button>'
-  +'<button type="button" data-cp-crop-save class="cp-primary">この範囲を保存</button></div></div>';
- document.body.appendChild(host);
- const stage=host.querySelector('.cp-crop-stage'),photo=host.querySelector('.cp-crop-photo'),frame=host.querySelector('.cp-crop-frame');
- const saveButton=host.querySelector('[data-cp-crop-save]');
- let released=false,finished=false;
- const cleanup=()=>{if(finished)return;finished=true;host.remove();if(!released){released=true;try{releaseSource?.()}catch(_){}}};
- const stageW=stage.getBoundingClientRect().width||Math.min(window.innerWidth-48,340);
- const cropW=stageW*(isHeader?.92:.82);
- const cropH=isHeader?cropW*270/640:cropW;
- frame.style.width=cropW+'px';frame.style.height=cropH+'px';
- const imgW=imgObj.naturalWidth||imgObj.width,imgH=imgObj.naturalHeight||imgObj.height;
- if(!imgW||!imgH){cleanup();api.toast('画像を読み込めませんでした');return;}
- const fit=Math.max(cropW/imgW,cropH/imgH);
- const baseW=imgW*fit,baseH=imgH*fit;
- photo.style.width=baseW+'px';photo.style.height=baseH+'px';
- photo.src=imgObj.src;
- const pointers=new Map();
- let zoom=1,ox=0,oy=0,pinch=null;
- const between=(n,min,max)=>Math.min(max,Math.max(min,n));
- function draw(){
-  const maxX=Math.max(0,(baseW*zoom-cropW)/2);
-  const maxY=Math.max(0,(baseH*zoom-cropH)/2);
-  ox=between(ox,-maxX,maxX);oy=between(oy,-maxY,maxY);
-  photo.style.transform='translate(-50%, -50%) translate('+ox+'px,'+oy+'px) scale('+zoom+')';
+/* All image kinds use exactly the same visual editor. */
+async function fileChosen(kind,file){
+ if(!file)return;
+ if(!file.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name||'')){
+  api.toast('画像ファイルを選んでください');return;
  }
- function pointDistance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
- function midPoint(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
- function capturePinch(){
-  if(pointers.size<2){pinch=null;return;}
-  const pair=[...pointers.values()].slice(0,2);
-  pinch={distance:Math.max(1,pointDistance(pair[0],pair[1])),zoom,ox,oy,mid:midPoint(pair[0],pair[1])};
- }
- stage.addEventListener('pointerdown',e=>{
-  if(finished)return;e.preventDefault();
-  try{stage.setPointerCapture(e.pointerId)}catch(_){}
-  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pointers.size>=2)capturePinch();
- });
- stage.addEventListener('pointermove',e=>{
-  if(finished||!pointers.has(e.pointerId))return;
-  e.preventDefault();
-  const previous=pointers.get(e.pointerId);
-  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pointers.size>=2){
-   if(!pinch)capturePinch();
-   const pts=[...pointers.values()].slice(0,2),mid=midPoint(pts[0],pts[1]);
-   zoom=between(pinch.zoom*pointDistance(pts[0],pts[1])/pinch.distance,1,5);
-   ox=pinch.ox+mid.x-pinch.mid.x;oy=pinch.oy+mid.y-pinch.mid.y;
-  }else{
-   ox+=e.clientX-previous.x;oy+=e.clientY-previous.y;
-  }
-  draw();
- });
- const releasePointer=e=>{pointers.delete(e.pointerId);capturePinch()};
- stage.addEventListener('pointerup',releasePointer);
- stage.addEventListener('pointercancel',releasePointer);
- stage.addEventListener('lostpointercapture',releasePointer);
- const zoomBy=multiple=>{zoom=between(zoom*multiple,1,5);draw()};
- host.querySelector('[data-cp-zoom-in]').onclick=()=>zoomBy(1.2);
- host.querySelector('[data-cp-zoom-out]').onclick=()=>zoomBy(1/1.2);
- host.querySelector('[data-cp-crop-cancel]').onclick=cleanup;
- stage.addEventListener('wheel',e=>{e.preventDefault();zoomBy(e.deltaY<0?1.07:1/1.07)},{passive:false});
- saveButton.onclick=async()=>{
-  if(finished)return;
-  saveButton.disabled=true;saveButton.textContent='保存中…';
-  let previous,changed=false;
-  try{
-   const canvas=document.createElement('canvas');
-   canvas.width=isHeader?640:360;canvas.height=isHeader?270:360;
-   const context=canvas.getContext('2d');
-   if(!context)throw Error('画像を描画できません');
-   const ratioX=canvas.width/cropW,ratioY=canvas.height/cropH;
-   const renderedW=baseW*zoom*ratioX,renderedH=baseH*zoom*ratioY;
-   if(isStamp){
-    context.beginPath();context.arc(canvas.width/2,canvas.height/2,canvas.width/2,0,Math.PI*2);context.clip();
-   }
-   context.drawImage(imgObj,(canvas.width-renderedW)/2+ox*ratioX,(canvas.height-renderedH)/2+oy*ratioY,renderedW,renderedH);
-   const encoded=canvas.toDataURL(isStamp?'image/png':'image/jpeg',isStamp?undefined:.77);
-   if(!encoded.startsWith('data:image/'))throw Error('画像変換に失敗しました');
-   const value=await window.AppPhotos.put(encoded);
-   const confirmed=await window.AppPhotos.get(value);
-   if(confirmed!==encoded)throw Error('写真が正しく保存されたか確認できません');
-   if(kind==='avatar'){
-    const person=conf(api.getState(),subject);
+ if(file.size>20*1024*1024){api.toast('20MB以下の画像を選んでください');return;}
+ const character=chosen;
+ const isAvatar=kind==='avatar';
+ const shape=kind==='header'?'header':kind==='stamp'?'circle':'square';
+ try{
+  await window.HimeImageEditor.open({file,shape,onSave:async encoded=>{
+   const newRef=await window.AppPhotos.put(encoded);
+   if((await window.AppPhotos.get(newRef))!==encoded)throw Error('保存後の写真を確認できません');
+   if(isAvatar){
+    const person=conf(api.getState(),character);
     if(!person)throw Error('キャラを選び直してください');
-    previous=person.avatar;person.avatar=value;changed=true;
-    try{api.save()}catch(error){
-     let saved=false;
-     try{const stored=JSON.parse(localStorage.getItem('hime-reward-v2'));saved=stored?.charStamps?.[subject]?.avatar===value}catch(_){}
-     if(!saved){person.avatar=previous;changed=false;throw error}
-     console.warn('保存後の画面再描画に失敗',error);
+    const previous=person.avatar;
+    person.avatar=newRef;
+    try{api.save();}
+    catch(error){
+     let diskValue;
+     try{diskValue=JSON.parse(localStorage.getItem('hime-reward-v2'))?.charStamps?.[character]?.avatar}catch(_){}
+     if(diskValue!==newRef){person.avatar=previous;throw error}
+     console.warn('画像保存後の再描画に失敗:',error);
     }
-    cleanup();
-    try{renderSettings(api.getState());window.AppPhotos.hydrate(document.getElementById('cp-settings'))}catch(error){console.warn('画像の画面更新に失敗',error)}
-    api.toast('キャラのアイコンを保存しました');
+    try{
+     window.CharacterProfiles?.render();
+     window.CharacterStamps.renderSettings(api.getState());
+     await window.AppPhotos.hydrate(document);
+    }catch(error){console.warn('画像の即時表示に失敗:',error)}
+    api.toast('キャラの写真を保存しました');
    }else{
     if(!draft)throw Error('スタンプ帳の編集画面を開き直してください');
-    draft[kind]=value;
-    cleanup();renderSettings(api.getState());
-    api.toast('切り抜き完了。最後にスタンプ帳の「保存」を押してください');
+    draft[kind]=newRef;
+    renderSettings(api.getState());
+    await window.AppPhotos.hydrate(document.getElementById('cp-settings'));
+    api.toast('切り抜き完了。スタンプ帳の保存ボタンで確定してください');
    }
-  }catch(error){
-   if(changed){const person=conf(api.getState(),subject);if(person)person.avatar=previous}
-   console.error('写真の切り抜き／保存に失敗:',error);
-   api.toast('保存できませんでした：'+(error?.message||'画像の保存を確認してください'));
-   saveButton.disabled=false;saveButton.textContent='この範囲を保存';
-  }
- };
- draw();
-}
-function fileChosen(kind,file){
- if(!file)return;
- if(!file.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name||''))return api.toast('画像ファイルを選んでください');
- if(file.size>20*1024*1024)return api.toast('20MB以下の画像を選んでください');
- let url;try{url=URL.createObjectURL(file)}catch(e){api.toast('写真を開けませんでした');return}
- const imgObj=new Image();
- let loaded=false;
- const revoke=()=>{if(url){URL.revokeObjectURL(url);url=null}};
- imgObj.onload=()=>{
-  if(loaded)return;loaded=true;
-  try{crop(kind,imgObj,revoke)}catch(error){console.error('画像編集を開けません',error);revoke();api.toast('画像を編集できませんでした');}
- };
- imgObj.onerror=()=>{if(loaded)return;loaded=true;revoke();api.toast('画像を読み込めません。JPEG・PNGで試してください');};
- imgObj.src=url;
+  }});
+ }catch(error){console.error('写真の読み込み／編集エラー:',error);api.toast(error?.message||'写真を編集できませんでした')}
 }
 function bind(context) {
  api=context;migrate(api.getState(),api.chars);
