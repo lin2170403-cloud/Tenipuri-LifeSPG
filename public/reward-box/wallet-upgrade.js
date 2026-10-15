@@ -35,7 +35,7 @@ function applyTx(s,tx,reverse=false){
  const sign=reverse?-1:1,amt=tx.amount;
  if(tx.from==='outside'&&s.debt>0&&tx.to!=='debt'&&!reverse)throw Error('借金がある間は新規入金できません');
  if(normal.includes(tx.from)){
-  if(!reverse&&a.availableFund(tx.from)<amt)throw Error('移動元の使用可能残高が不足しています');
+  if(!reverse&&balance(s,tx.from)-s.fundCredits.filter(x=>x.key===tx.from&&x.date>=a.today()).reduce((n,x)=>n+(x.amount||0),0)<amt)throw Error('移動元の使用可能残高が不足しています');
   putBalance(s,tx.from,balance(s,tx.from)-sign*amt);
  }
  if(tx.to==='debt'){
@@ -72,6 +72,10 @@ function fundModal(key,entry=null){
   // A saved transfer is undone on a working clone before the revised one is applied.
   const copy={...s,funds:{...s.funds},fundCredits:[...s.fundCredits],dateCredits:[...s.dateCredits]};
   try{
+   if(entry&&entry.amount===amt&&entry.from===from){
+    entry.note=note;
+    a.log('fund','資金記録の備考を訂正',note);a.persist();close();a.render();a.toast('記録を更新しました');return;
+   }
    if(entry){
     if(entry.to==='savings'&&(entry.amount!==amt||entry.from!==from))throw Error('ガチャ報酬を保護するため北海道貯金の金額・移動元は変更できません');
     applyTx(copy,entry,true);
@@ -138,13 +142,46 @@ function render(){
  }
  renderPoints();
 }
+function editTraining(date){
+ const s=a.state(),record=s.trainingDaily[date]||{};
+ const keys=['physical','mental','technical','wisdom','ingenuity','coins'];
+ showModal('<h3>取得ポイントを修正｜'+esc(date)+'</h3><p class="wallet-up-sub">消費済みのポイントは戻りません。未使用残高を下回る減額は受け付けません。</p><form id="wallet-training-edit">'+keys.map(k=>'<label>'+esc(k)+'<input name="'+k+'" type="number" min="0" step="1" value="'+(Number(record[k])||0)+'" required></label>').join('')+'<label>備考<textarea name="note" rows="2">'+esc(record.note||'')+'</textarea></label><button class="wallet-up-submit">記録を更新</button></form>');
+ modal.querySelector('form').addEventListener('submit',e=>{
+  e.preventDefault();const newRecord={},delta={};
+  for(const k of keys){
+   const n=Number(e.target.elements[k].value),old=Number(record[k])||0;
+   if(!Number.isSafeInteger(n)||n<0||(['physical','mental','technical'].includes(k)&&n>25))return a.toast('一日あたりの上限と数字を確認してください');
+   delta[k]=n-old;
+   if(s.resources[k]+delta[k]<0)return a.toast('使用済みの'+k+'ポイントは再利用・取り消しできません');
+   newRecord[k]=n;
+  }
+  newRecord.note=e.target.elements.note.value.trim();
+  const oldRow=s.trainingDaily[date];const oldBalance={...s.resources};
+  for(const k of keys)s.resources[k]+=delta[k];
+  s.trainingDaily[date]=newRecord;
+  a.log('training','取得記録を訂正 '+date,'ポイント差分 '+Object.entries(delta).map(([k,n])=>k+':'+n).join(' / '));
+  try{a.persist();close();a.render();a.toast('ポイント取得記録を修正しました')}
+  catch(error){s.trainingDaily[date]=oldRow;Object.assign(s.resources,oldBalance);a.toast('保存できませんでした')}
+ });
+}
+function editAudit(id){
+ const entry=a.state().pointHistory.find(p=>p.id===id);if(!entry)return;
+ showModal('<h3>履歴のメモを修正</h3><p class="wallet-up-sub">消費したポイント量はキャラ育成・スキルと連動するため、履歴から直接増減できません。</p><form id="point-audit-edit"><label>説明<textarea name="title" rows="3" maxlength="160">'+esc(entry.title||'')+'</textarea></label><button class="wallet-up-submit">説明を保存</button></form>');
+ modal.querySelector('form').addEventListener('submit',e=>{
+  e.preventDefault();entry.title=e.target.elements.title.value.trim();
+  a.persist();close();a.render();a.toast('説明を修正しました');
+ });
+}
 function renderPoints(){
  const s=a.state(),root=$$('point-history-list');if(!root)return;
  const events=Array.isArray(s.pointHistory)?s.pointHistory:[];
- const rows=events.filter(item=>view==='earned'?item.kind==='earned':item.kind==='spent').slice(0,200);
- root.innerHTML=rows.length?rows.map(item=>'<div class="wallet-history-row"><div><strong>'+esc(item.title||'ポイント変動')+'</strong><small>'+esc(item.at||'')+'</small></div><b>'+Object.entries(item.delta||{}).map(([k,n])=>esc(k)+' '+(n>0?'+':'')+n).join(' · ')+'</b></div>').join(''):'<p class="minor">この記録方式の導入後は、'+(view==='earned'?'取得':'使用')+'履歴がここに表示されます。過去分は下の従来履歴で確認できます。</p>';
+ const rows=events.filter(item=>view==='earned'?['earned','adjustment'].includes(item.kind):item.kind==='spent').slice(0,150);
+ const daily=view==='earned'?Object.entries(s.trainingDaily).sort((x,y)=>y[0].localeCompare(x[0])).slice(0,60).map(([date,item])=>
+ '<div class="wallet-history-row"><div><strong>取得記録｜'+esc(date)+'</strong><small>基礎 '+(['physical','mental','technical'].reduce((n,k)=>n+(Number(item[k])||0),0))+' / 悟性 '+(item.wisdom||0)+' / 工夫 '+(item.ingenuity||0)+' / 🐱 '+(item.coins||0)+'</small></div><button type="button" data-point-training="'+esc(date)+'">編集</button></div>').join(''):'';
+ const journal=rows.map(item=>'<div class="wallet-history-row"><div><strong>'+esc(item.title||'ポイント変動')+'</strong><small>'+esc(item.at||'')+'</small></div><b>'+Object.entries(item.delta||{}).map(([k,n])=>esc(k)+' '+(n>0?'+':'')+n).join(' · ')+'</b><button type="button" data-point-audit="'+esc(item.id)+'">編集</button></div>').join('');
+ root.innerHTML=daily+journal||'<p class="minor">この記録方式の導入後は、'+(view==='earned'?'取得':'使用')+'履歴がここに表示されます。過去分は下の従来履歴で確認できます。</p>';
  const legacy=$$('point-old-history');
- if(legacy)legacy.innerHTML=s.events.filter(e=>view==='earned'?['training','daily','gacha','fund'].includes(e.kind):['allocation','skill','gift','gacha'].includes(e.kind)).slice(0,80).map(e=>'<div class="wallet-history-row"><div><strong>'+esc(e.title||e.kind)+'</strong><small>'+esc(e.note||'')+' · '+esc(e.at||'')+'</small></div></div>').join('')||'';
+ if(legacy)legacy.innerHTML=s.events.filter(e=>view==='earned'?['training','daily','gacha'].includes(e.kind):['allocation','skill','gift','gacha'].includes(e.kind)).slice(0,80).map(e=>'<div class="wallet-history-row"><div><strong>'+esc(e.title||e.kind)+'</strong><small>'+esc(e.note||'')+' · '+esc(e.at||'')+'</small></div></div>').join('')||'';
  document.querySelectorAll('[data-point-view]').forEach(btn=>{btn.classList.toggle('active',btn.dataset.pointView===view);btn.setAttribute('aria-pressed',String(btn.dataset.pointView===view))});
 }
 function bind(context){
@@ -153,6 +190,10 @@ function bind(context){
  $$('fund-operation-history')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-edit]');if(!b)return;const tx=a.state().walletTransactions.find(x=>x.id===b.dataset.walletEdit);if(tx)editTx(tx)});
  $$('ledger-list')?.addEventListener('click',e=>{const b=e.target.closest('[data-wallet-ledger]');if(b)editLedger(Number(b.dataset.walletLedger))});
  document.querySelectorAll('[data-point-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.pointView;renderPoints()}));
+ $('point-history-list')?.addEventListener('click',e=>{
+  const training=e.target.closest('[data-point-training]'),audit=e.target.closest('[data-point-audit]');
+  if(training)editTraining(training.dataset.pointTraining);else if(audit)editAudit(audit.dataset.pointAudit);
+ });
  render();
 }
 window.WalletUpgrade={bind,render,renderPoints};
