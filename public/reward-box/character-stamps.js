@@ -110,46 +110,145 @@ function saveEdit(s,form){
  else Object.assign(x.books.find(b=>b.id===edit),data);
  edit=null;api.save();api.toast('打刻帳を保存しました');
 }
-let uploadKind='avatar';
-function crop(kind,imgObj){
- const host=document.createElement('div');host.className='cp-crop-overlay';
- host.innerHTML=`<div class="cp-crop-modal"><h3>画像を切り抜く</h3><p>${kind==='stamp'?'スタンプは円形に切り抜きます':kind==='header'?'ヘッダーは横長です':'头像は正方形です'}</p>
- <canvas width="${kind==='header'?640:300}" height="${kind==='header'?270:300}"></canvas>
- <label>拡大<input type="range" data-cp-crop="zoom" min="1" max="3" step=".05" value="1"></label>
- <label>左右<input type="range" data-cp-crop="x" min="-100" max="100" value="0"></label>
- <label>上下<input type="range" data-cp-crop="y" min="-100" max="100" value="0"></label>
- <div class="cp-controls"><button data-cp-crop-save class="cp-primary">保存</button><button data-cp-crop-cancel>キャンセル</button></div></div>`;
+/* Interactive cropper: drag image under the visible mask, pinch to zoom.
+   The exported crop matches the on-screen fixed crop frame. */
+function crop(kind,imgObj,releaseSource){
+ const subject=chosen;
+ const isHeader=kind==='header',isStamp=kind==='stamp';
+ const title=isHeader?'ヘッダー':isStamp?'スタンプ':'キャラのアイコン';
+ const host=document.createElement('div');host.className='cp-crop-overlay cp-crop-v2';
+ host.innerHTML='<div class="cp-crop-modal cp-crop-dialog" role="dialog" aria-modal="true" aria-label="画像を切り抜く">'
+  +'<h3>'+title+'の切り抜き</h3>'
+  +'<p class="cp-crop-help">写真を指で動かして位置を調整。2本指で拡大・縮小できます。</p>'
+  +'<div class="cp-crop-stage" aria-label="ドラッグして画像の位置を調整">'
+  +'<img class="cp-crop-photo" alt="切り抜く写真" draggable="false">'
+  +'<div class="cp-crop-frame'+(isStamp?' is-round':'')+'" aria-hidden="true"></div></div>'
+  +'<div class="cp-crop-actions"><button type="button" data-cp-zoom-out aria-label="縮小">−</button><span>拡大・縮小</span><button type="button" data-cp-zoom-in aria-label="拡大">＋</button></div>'
+  +'<div class="cp-controls"><button type="button" data-cp-crop-cancel>キャンセル</button>'
+  +'<button type="button" data-cp-crop-save class="cp-primary">この範囲を保存</button></div></div>';
  document.body.appendChild(host);
- const q={zoom:1,x:0,y:0},canvas=host.querySelector('canvas'),c=canvas.getContext('2d');
- const paint=()=>{const w=canvas.width,h=canvas.height,z=Math.max(w/imgObj.width,h/imgObj.height)*q.zoom,iw=imgObj.width*z,ih=imgObj.height*z;
- c.clearRect(0,0,w,h);c.save();if(kind==='stamp'){c.beginPath();c.arc(w/2,h/2,w/2,0,Math.PI*2);c.clip();}
- c.drawImage(imgObj,(w-iw)/2+q.x*(iw-w)/200,(h-ih)/2+q.y*(ih-h)/200,iw,ih);c.restore();};
- host.querySelectorAll('[data-cp-crop]').forEach(el=>el.oninput=()=>{q[el.dataset.cpCrop]=Number(el.value);paint();});
- host.querySelector('[data-cp-crop-cancel]').onclick=()=>host.remove();
- host.querySelector('[data-cp-crop-save]').onclick=async()=>{
- const button=host.querySelector('[data-cp-crop-save]');button.disabled=true;
- try{
-  const encoded=canvas.toDataURL(kind==='stamp'?'image/png':'image/jpeg',0.7);
-  const value=await window.AppPhotos.put(encoded);
-  if(kind==='avatar'){
-   const person=conf(api.getState(),chosen),previous=person.avatar;
-   person.avatar=value;
-   try{api.save()}catch(e){person.avatar=previous;throw e}
-  }else if(draft)draft[kind]=value;
-  host.remove();renderSettings(api.getState());api.toast('写真を追加しました');
- }catch(error){console.error('スタンプ画像保存失敗:',error);api.toast('画像の保存に失敗しました。空き容量と画像形式を確認してください');button.disabled=false;}
-};paint();
+ const stage=host.querySelector('.cp-crop-stage'),photo=host.querySelector('.cp-crop-photo'),frame=host.querySelector('.cp-crop-frame');
+ const saveButton=host.querySelector('[data-cp-crop-save]');
+ let released=false,finished=false;
+ const cleanup=()=>{if(finished)return;finished=true;host.remove();if(!released){released=true;try{releaseSource?.()}catch(_){}}};
+ const stageW=stage.getBoundingClientRect().width||Math.min(window.innerWidth-48,340);
+ const cropW=stageW*(isHeader?.92:.82);
+ const cropH=isHeader?cropW*270/640:cropW;
+ frame.style.width=cropW+'px';frame.style.height=cropH+'px';
+ const imgW=imgObj.naturalWidth||imgObj.width,imgH=imgObj.naturalHeight||imgObj.height;
+ if(!imgW||!imgH){cleanup();api.toast('画像を読み込めませんでした');return;}
+ const fit=Math.max(cropW/imgW,cropH/imgH);
+ const baseW=imgW*fit,baseH=imgH*fit;
+ photo.style.width=baseW+'px';photo.style.height=baseH+'px';
+ photo.src=imgObj.src;
+ const pointers=new Map();
+ let zoom=1,ox=0,oy=0,pinch=null;
+ const between=(n,min,max)=>Math.min(max,Math.max(min,n));
+ function draw(){
+  const maxX=Math.max(0,(baseW*zoom-cropW)/2);
+  const maxY=Math.max(0,(baseH*zoom-cropH)/2);
+  ox=between(ox,-maxX,maxX);oy=between(oy,-maxY,maxY);
+  photo.style.transform='translate(-50%, -50%) translate('+ox+'px,'+oy+'px) scale('+zoom+')';
+ }
+ function pointDistance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+ function midPoint(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
+ function capturePinch(){
+  if(pointers.size<2){pinch=null;return;}
+  const pair=[...pointers.values()].slice(0,2);
+  pinch={distance:Math.max(1,pointDistance(pair[0],pair[1])),zoom,ox,oy,mid:midPoint(pair[0],pair[1])};
+ }
+ stage.addEventListener('pointerdown',e=>{
+  if(finished)return;e.preventDefault();
+  try{stage.setPointerCapture(e.pointerId)}catch(_){}
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2)capturePinch();
+ });
+ stage.addEventListener('pointermove',e=>{
+  if(finished||!pointers.has(e.pointerId))return;
+  e.preventDefault();
+  const previous=pointers.get(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2){
+   if(!pinch)capturePinch();
+   const pts=[...pointers.values()].slice(0,2),mid=midPoint(pts[0],pts[1]);
+   zoom=between(pinch.zoom*pointDistance(pts[0],pts[1])/pinch.distance,1,5);
+   ox=pinch.ox+mid.x-pinch.mid.x;oy=pinch.oy+mid.y-pinch.mid.y;
+  }else{
+   ox+=e.clientX-previous.x;oy+=e.clientY-previous.y;
+  }
+  draw();
+ });
+ const releasePointer=e=>{pointers.delete(e.pointerId);capturePinch()};
+ stage.addEventListener('pointerup',releasePointer);
+ stage.addEventListener('pointercancel',releasePointer);
+ stage.addEventListener('lostpointercapture',releasePointer);
+ const zoomBy=multiple=>{zoom=between(zoom*multiple,1,5);draw()};
+ host.querySelector('[data-cp-zoom-in]').onclick=()=>zoomBy(1.2);
+ host.querySelector('[data-cp-zoom-out]').onclick=()=>zoomBy(1/1.2);
+ host.querySelector('[data-cp-crop-cancel]').onclick=cleanup;
+ stage.addEventListener('wheel',e=>{e.preventDefault();zoomBy(e.deltaY<0?1.07:1/1.07)},{passive:false});
+ saveButton.onclick=async()=>{
+  if(finished)return;
+  saveButton.disabled=true;saveButton.textContent='保存中…';
+  let previous,changed=false;
+  try{
+   const canvas=document.createElement('canvas');
+   canvas.width=isHeader?640:360;canvas.height=isHeader?270:360;
+   const context=canvas.getContext('2d');
+   if(!context)throw Error('画像を描画できません');
+   const ratioX=canvas.width/cropW,ratioY=canvas.height/cropH;
+   const renderedW=baseW*zoom*ratioX,renderedH=baseH*zoom*ratioY;
+   if(isStamp){
+    context.beginPath();context.arc(canvas.width/2,canvas.height/2,canvas.width/2,0,Math.PI*2);context.clip();
+   }
+   context.drawImage(imgObj,(canvas.width-renderedW)/2+ox*ratioX,(canvas.height-renderedH)/2+oy*ratioY,renderedW,renderedH);
+   const encoded=canvas.toDataURL(isStamp?'image/png':'image/jpeg',isStamp?undefined:.77);
+   if(!encoded.startsWith('data:image/'))throw Error('画像変換に失敗しました');
+   const value=await window.AppPhotos.put(encoded);
+   const confirmed=await window.AppPhotos.get(value);
+   if(confirmed!==encoded)throw Error('写真が正しく保存されたか確認できません');
+   if(kind==='avatar'){
+    const person=conf(api.getState(),subject);
+    if(!person)throw Error('キャラを選び直してください');
+    previous=person.avatar;person.avatar=value;changed=true;
+    try{api.save()}catch(error){
+     let saved=false;
+     try{const stored=JSON.parse(localStorage.getItem('hime-reward-v2'));saved=stored?.charStamps?.[subject]?.avatar===value}catch(_){}
+     if(!saved){person.avatar=previous;changed=false;throw error}
+     console.warn('保存後の画面再描画に失敗',error);
+    }
+    cleanup();
+    try{renderSettings(api.getState());window.AppPhotos.hydrate(document.getElementById('cp-settings'))}catch(error){console.warn('画像の画面更新に失敗',error)}
+    api.toast('キャラのアイコンを保存しました');
+   }else{
+    if(!draft)throw Error('スタンプ帳の編集画面を開き直してください');
+    draft[kind]=value;
+    cleanup();renderSettings(api.getState());
+    api.toast('切り抜き完了。最後にスタンプ帳の「保存」を押してください');
+   }
+  }catch(error){
+   if(changed){const person=conf(api.getState(),subject);if(person)person.avatar=previous}
+   console.error('写真の切り抜き／保存に失敗:',error);
+   api.toast('保存できませんでした：'+(error?.message||'画像の保存を確認してください'));
+   saveButton.disabled=false;saveButton.textContent='この範囲を保存';
+  }
+ };
+ draw();
 }
-function fileChosen(kind,f){
- if(!f)return;
- if(!f.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name||''))return api.toast('画像ファイルを選んでください');
- if(f.size>20*1024*1024)return api.toast('20MB以下の画像を選んでください');
- let url;
- try{url=URL.createObjectURL(f)}catch(e){return api.toast('画像ファイルを開けませんでした')}
- const image=new Image();let completed=false;
- const fail=()=>{if(completed)return;completed=true;URL.revokeObjectURL(url);api.toast('画像を読み込めません。JPEGかPNGで試してください')};
- image.onload=()=>{if(completed)return;completed=true;try{crop(kind,image)}catch(error){console.error(error);api.toast('画像を開けませんでした')}finally{URL.revokeObjectURL(url)}};
- image.onerror=fail;image.src=url;
+function fileChosen(kind,file){
+ if(!file)return;
+ if(!file.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name||''))return api.toast('画像ファイルを選んでください');
+ if(file.size>20*1024*1024)return api.toast('20MB以下の画像を選んでください');
+ let url;try{url=URL.createObjectURL(file)}catch(e){api.toast('写真を開けませんでした');return}
+ const imgObj=new Image();
+ let loaded=false;
+ const revoke=()=>{if(url){URL.revokeObjectURL(url);url=null}};
+ imgObj.onload=()=>{
+  if(loaded)return;loaded=true;
+  try{crop(kind,imgObj,revoke)}catch(error){console.error('画像編集を開けません',error);revoke();api.toast('画像を編集できませんでした');}
+ };
+ imgObj.onerror=()=>{if(loaded)return;loaded=true;revoke();api.toast('画像を読み込めません。JPEG・PNGで試してください');};
+ imgObj.src=url;
 }
 function bind(context) {
  api=context;migrate(api.getState(),api.chars);

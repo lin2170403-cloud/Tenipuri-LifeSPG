@@ -16,17 +16,36 @@ function db(){
 }
 async function put(value){
  if(re.test(value))return value;
- if(!imageData.test(value))throw Error('Unsupported image data');
- const database=await db();
+ if(!imageData.test(value))throw Error('画像データの形式を確認してください');
+ let database;
+ try{database=await db()}catch(error){
+  console.warn('画像保存領域を開けません。写真を記録内に小さく保存します:',error);
+  return value;
+ }
  const key='stamp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12);
- await new Promise((resolve,reject)=>{
-  const tx=database.transaction('photos','readwrite');
-  tx.objectStore('photos').put(value,key);
-  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Photo write failed'));
-  tx.onabort=()=>reject(tx.error||Error('Photo write aborted'));
- });
- cache.set('idb:'+key,value);
- return 'idb:'+key;
+ try{
+  await new Promise((resolve,reject)=>{
+   let tx;try{
+    tx=database.transaction('photos','readwrite');
+    tx.objectStore('photos').put(value,key);
+   }catch(err){reject(err);return;}
+   tx.oncomplete=()=>resolve();
+   tx.onerror=()=>reject(tx.error||Error('画像の書き込みに失敗'));
+   tx.onabort=()=>reject(tx.error||Error('画像の保存が中断されました'));
+  });
+  const verified=await new Promise((resolve,reject)=>{
+   let request;try{
+    request=database.transaction('photos','readonly').objectStore('photos').get(key);
+   }catch(err){reject(err);return}
+   request.onsuccess=()=>resolve(request.result===value);
+   request.onerror=()=>reject(request.error||Error('写真の読み戻しに失敗'));
+  });
+  if(!verified)throw Error('保存した写真を確認できません');
+  const ref='idb:'+key;cache.set(ref,value);return ref;
+ }catch(error){
+  console.warn('画像の独立保存に失敗。小さな写真を直接保存します:',error);
+  return value;
+ }
 }
 async function get(ref){
  if(!re.test(ref))return ref||'';
@@ -87,9 +106,9 @@ async function importState(s){
 async function migrate(s,save){
  let changed=false;
  for(const cfg of Object.values(s.charStamps||{})){
-  if(inline(cfg.avatar)){try{cfg.avatar=await put(cfg.avatar);changed=true}catch(e){console.warn('Avatar migration skipped',e)}}
+  if(inline(cfg.avatar)){try{const stored=await put(cfg.avatar);if(stored!==cfg.avatar){cfg.avatar=stored;changed=true}}catch(e){console.warn('Avatar migration skipped',e)}}
   for(const book of cfg.books||[])for(const k of ['header','stamp']){
-   if(inline(book[k]))try{book[k]=await put(book[k]);changed=true}catch(e){console.warn('Stamp migration skipped',e)}
+   if(inline(book[k]))try{const stored=await put(book[k]);if(stored!==book[k]){book[k]=stored;changed=true}}catch(e){console.warn('Stamp migration skipped',e)}
   }
  }
  if(changed)try{save()}catch(e){console.warn('Cannot persist migrated images',e)}

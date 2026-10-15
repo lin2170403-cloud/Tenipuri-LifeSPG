@@ -55,3 +55,39 @@
 .cp-crop-modal{box-sizing:border-box;max-height:92dvh;max-width:100%;min-width:0}
 html.tl-editor-is-open,html.tl-editor-is-open body{overscroll-behavior:none}
 @media(max-width:380px){.cp-uploads{grid-template-columns:minmax(0,1fr)!important}.cp-file-picker{width:100%}}
+
+/* Photo cropping on iPhone: a real visual crop frame, finger drag, pinch zoom. */
+.cp-crop-v2{position:fixed!important;inset:0!important;display:flex!important;align-items:center;justify-content:center;
+ z-index:8500!important;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))!important;
+ background:#101421b3}
+.cp-crop-v2 .cp-crop-dialog{box-sizing:border-box;width:min(100%,440px)!important;max-width:100%!important;
+ max-height:min(92dvh,730px)!important;padding:18px 14px!important;overflow-y:auto;overscroll-behavior:contain;
+ border-radius:19px;gap:12px!important}
+.cp-crop-v2 .cp-crop-dialog h3{font-size:17px!important}
+.cp-crop-v2 .cp-crop-help{font-size:13px!important;line-height:1.5;color:#615e6d}
+.cp-crop-v2 .cp-crop-stage{position:relative;align-self:center;
+ width:min(100%,340px);aspect-ratio:1;background:#101722;
+ overflow:hidden;border-radius:11px;touch-action:none!important;
+ -webkit-user-select:none;user-select:none;cursor:grab}
+.cp-crop-v2 .cp-crop-stage:active{cursor:grabbing}
+.cp-crop-v2 .cp-crop-photo{position:absolute!important;left:50%;top:50%;width:auto;height:auto;
+ max-width:none!important;max-height:none!important;object-fit:fill!important;pointer-events:none!important;
+ -webkit-user-select:none!important;user-select:none!important;transform-origin:center;will-change:transform}
+.cp-crop-v2 .cp-crop-frame{pointer-events:none!important;position:absolute;left:50%;top:50%;z-index:2;
+ transform:translate(-50%,-50%);border:2px solid #fff!important;box-sizing:border-box;
+ box-shadow:0 0 0 1000px rgba(11,16,27,.58);border-radius:4px}
+.cp-crop-v2 .cp-crop-frame.is-round{border-radius:50%!important}
+.cp-crop-v2 .cp-crop-frame::before,.cp-crop-v2 .cp-crop-frame::after{
+ content:"";position:absolute;width:17px;height:17px;border-color:#fff;border-style:solid}
+.cp-crop-v2 .cp-crop-frame::before{top:-3px;left:-3px;border-width:3px 0 0 3px}
+.cp-crop-v2 .cp-crop-frame::after{right:-3px;bottom:-3px;border-width:0 3px 3px 0}
+.cp-crop-v2 .cp-crop-frame.is-round::before,.cp-crop-v2 .cp-crop-frame.is-round::after{display:none}
+.cp-crop-v2 .cp-crop-actions{display:flex;justify-content:center;align-items:center;gap:17px}
+.cp-crop-v2 .cp-crop-actions span{font-size:12px;color:#6b6373}
+.cp-crop-v2 .cp-crop-actions button{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;
+ color:var(--theme-accent);background:var(--theme-soft);border:1px solid var(--theme-line);font-size:24px}
+.cp-crop-v2 .cp-controls{display:flex!important;gap:9px!important;margin:0!important}
+.cp-crop-v2 .cp-controls button{flex:1;min-height:46px;min-width:0;padding:10px!important;border-radius:10px!important;font-size:14px!important}
+.cp-crop-v2 .cp-controls .cp-primary{background:var(--theme-accent)!important;color:#fff!important}
+.cp-crop-v2 .cp-controls button:disabled{opacity:.5}
+@media(max-height:650px){.cp-crop-v2 .cp-crop-stage{width:min(100%,245px)}.cp-crop-v2 .cp-crop-dialog{padding:10px!important;gap:6px!important}}
