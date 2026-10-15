@@ -1,0 +1,33 @@
+{
+  "name": "姫のごほうび金庫",
+  "short_name": "姫の金庫",
+  "description": "北海道貯金・生活管理・テニプリキャラ育成をひとつにまとめる、姫のごほうび金庫。",
+  "lang": "ja",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f7fa",
+  "theme_color": "#7256aa",
+  "icons": [
+    {
+      "src": "../icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
