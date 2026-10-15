@@ -76,10 +76,13 @@ function protect(s,c,slot=null) {
  b.days[target]={protected:true,time:new Date().toISOString()};
  api.log('stamp',kind+'を使用',c+' '+target);api.save();api.toast('炎を守りました 🔥');
 }
+function refreshPhotos(root){
+ window.AppPhotos?.hydrate(root).catch(err=>console.warn('画像表示を更新できません:',err));
+}
 function renderSettings(s){
  const root=document.getElementById('cp-settings');if(!root)return;
  if(!chosen){root.innerHTML=`<h3>12人のキャラとスタンプ帳</h3><p class="cp-help">写真とスタンプ帳を設定。1人につき複数冊登録でき、同時に使えるのは1冊だけ。</p>
- <div class="cp-set-grid">${api.chars.map(c=>`<button data-cp-person="${c.id}"><div>${img(conf(s,c.id).avatar)||esc(c.name)}</div><small>${esc(c.name)}</small><em>${conf(s,c.id).books.length}冊</em></button>`).join('')}</div>`;return;}
+ <div class="cp-set-grid">${api.chars.map(c=>`<button data-cp-person="${c.id}"><div>${img(conf(s,c.id).avatar)||esc(c.name)}</div><small>${esc(c.name)}</small><em>${conf(s,c.id).books.length}冊</em></button>`).join('')}</div>`;refreshPhotos(root);return;}
  const c=api.chars.find(x=>x.id===chosen),x=conf(s,chosen);
  root.innerHTML=`<button data-cp-go-back class="cp-back">‹ 12人の設定へ</button><div class="cp-avatar-editor">
  <div class="cp-avatar-circle">${img(x.avatar)||esc(c.name)}</div><div><h3>${esc(c.name)}</h3><label class="cp-file-picker cp-action">📷 写真をアップロード<input type="file" data-cp-file="avatar" accept="image/*,.heic,.heif"></label></div></div>
@@ -95,7 +98,7 @@ function renderSettings(s){
  <p class="cp-help">合計100%以下。余りは通常の応援セリフになります。</p>
  ${draft.messages.map((m,i)=>`<div class="cp-msg"><textarea data-cp-msg="${i}" rows="2">${esc(m.text)}</textarea><label><input type="number" data-cp-prob="${i}" min="0" max="100" step="1" value="${m.chance}">%</label><button data-cp-delmsg="${i}" type="button">×</button></div>`).join('')}
  <p class="cp-help">現在の合計 ${draft.messages.reduce((n,m)=>n+m.chance,0)}%</p>
- <div class="cp-controls"><button class="cp-primary" type="submit">保存</button><button data-cp-cancel type="button">取消</button></div></form>`:''}`;
+ <div class="cp-controls"><button class="cp-primary" type="submit">保存</button><button data-cp-cancel type="button">取消</button></div></form>`:''}`; refreshPhotos(root);
 }
 function beginEdit(s,key){
  const b=key==='new'?{name:'',note:'',header:'',stamp:'',messages:[{text:'今日もよく頑張ったね。',chance:100}]}:conf(s,chosen).books.find(b=>b.id===key);
