@@ -95,10 +95,20 @@ function modalRender(s){
  <button type="button" aria-label="閉じる" data-cp-peek-close>×</button></div>
  <div class="cp-peek-scroll">${modalContent(s)}</div></div>`;
  peek.classList.add('open');peek.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
-}function render() {
+}let lastUIKey='';
+function render() {
  if(!A)return;
  const s=A.state();S().migrate(s,A.chars);
- document.getElementById('cp-home').innerHTML=header(s)+(id?detail(s):lobby(s));modalRender(s);
+ const root=document.getElementById('cp-home');if(!root)return;
+ // Do not discard the whole screen, focus, photo, or input state on unrelated saves.
+ const key=JSON.stringify([id,view,tab,goodsTab,attr,
+  s.resources,s.characters,s.charStamps,s.itemStock,s.gifts,s.stampTickets,
+  s.protectionDays,s.dateLocked,s.dates,s.dateHistory]);
+ if(key===lastUIKey&&root.childElementCount){return;}
+ root.innerHTML=header(s)+(id?detail(s):lobby(s));
+ lastUIKey=key;
+ modalRender(s);
+ window.AppPhotos?.hydrate(root).catch(error=>console.warn('キャラ写真を表示できません:',error));
 }
 function bind(api) {
  A=api;const root=document.getElementById('cp-home');
