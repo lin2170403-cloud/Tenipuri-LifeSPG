@@ -64,6 +64,7 @@ test('theme and system language update without page refresh',async({page})=>{
 test('funds can be topped up with immediately visible transaction history',async({page})=>{
  await openApp(page);
  await page.locator('.bottom-tabs [data-tab="wallet"]').click();
+ await page.locator('[data-walletview="funds"]').click();
  const cards=page.locator('#fund-grid [data-wallet-fund]');
  await expect(cards).toHaveCount(9);
  await page.locator('#fund-grid [data-wallet-fund="unallocated"]').click();
