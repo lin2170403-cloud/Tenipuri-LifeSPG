@@ -68,7 +68,7 @@ test('photo store persists and verifies, with a safe fallback if IndexedDB unava
   const tx={oncomplete:null,objectStore(){return{
    put(v,k){records.set(k,v);run(()=>tx.oncomplete?.());},
    get(k){const request={};run(()=>{request.result=records.get(k);request.onsuccess?.();});return request;}
-  }};return tx;
+  }}};return tx;
  }};
  const make=indexedDB=>moduleValue('app-photos.js','AppPhotos',{
   document:{readyState:'loading',addEventListener(){}},
