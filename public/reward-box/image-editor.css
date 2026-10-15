@@ -41,3 +41,6 @@
  #canonical-point-history .wallet-history-row{flex-wrap:wrap}
  #canonical-point-history .wallet-history-row > div{flex-basis:100%}
 }
+
+/* Explicitly restore the point history beneath the canonical screen: override the old blanket :not(#cp-home) rule. */
+#page-chars > #canonical-point-history{display:block!important}
