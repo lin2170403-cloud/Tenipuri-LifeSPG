@@ -58,7 +58,7 @@ function renderImage(value,cls=''){
  if(!value)return '';
  const safeClass=String(cls).replace(/[^a-zA-Z0-9 _-]/g,'');
  if(re.test(value))return '<img class="'+safeClass+'" data-hime-photo-ref="'+value+'" alt="">';
- if(inline(value))return '<img class="'+safeClass+'" src="'+value+'" alt="">';
+ if(inline(value)||/^https:\/\/[^\s"'<>]+$/i.test(value))return '<img class="'+safeClass+'" src="'+String(value).replaceAll('&','&amp;')+'" alt="">';
  return '';
 }
 function bgAttrs(value){
