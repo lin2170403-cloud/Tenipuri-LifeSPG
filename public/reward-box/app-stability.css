@@ -1,0 +1,37 @@
+/* October 15 UI reliability fixes: settings, week calendar, tab contrast. */
+html[data-theme] body, html[data-theme] .app{background-color:var(--bg)}
+html[data-theme] .bottom-tabs .tab.active,html[data-theme] .tab.active{color:var(--theme-accent)!important}
+html[data-theme] .seal,html[data-theme] .badge{background:var(--theme-soft)!important;color:var(--theme-accent)!important}
+html[data-theme] .btn:not(.secondary):not(.outline):not(.ghost){background:var(--theme-accent);border-color:var(--theme-accent)}
+html[data-theme] .cp-profile,html[data-theme] .cp-radar-card,html[data-theme] .tl-timeline,html[data-theme] .tl-calendar{border-color:var(--theme-line)}
+/* Avoid the former accent-on-accent selected-tab regression. */
+html[data-theme] #cp-home .cp-tabs button.active,
+html[data-theme] #cp-home .cp-shop-tabs button.active{
+ color:#fff!important;background:var(--theme-accent)!important;
+ border-color:var(--theme-accent)!important;
+ text-shadow:none!important;opacity:1!important;
+}
+html[data-theme] #cp-home .cp-tabs button:not(.active){color:var(--ink)!important}
+html[data-theme] #page-gacha .gacha-switch button.active{
+ color:#fff!important;background:var(--theme-accent)!important;
+ border-color:var(--theme-accent)!important;
+}
+/* Reference-style month-to-week folding, with one tap to restore month. */
+#page-timeline .tl-month{display:flex;gap:8px!important;justify-content:space-between;align-items:center}
+#page-timeline .tl-month strong{min-width:0;flex:1;white-space:nowrap}
+#page-timeline .tl-month .tl-toggle{
+ display:flex;align-items:center;justify-content:center;
+ flex:0 0 35px;padding:4px 6px;min-height:33px;
+ font-size:18px;line-height:1;border:1px solid var(--theme-line);
+ background:var(--theme-soft);border-radius:9px;color:var(--theme-accent);
+}
+#page-timeline .tl-calendar.is-compact .tl-day.outside-month{opacity:.56}
+#page-timeline .tl-calendar.is-compact .tl-days{grid-template-columns:repeat(7,minmax(0,1fr))}
+#page-timeline .tl-calendar.is-compact .tl-month{margin-bottom:9px!important}
+#page-timeline .tl-day:focus-visible,#page-timeline .tl-toggle:focus-visible{
+ outline:2px solid var(--theme-accent);outline-offset:2px;
+}
+@media(max-width:400px){
+ #page-timeline .tl-month strong{font-size:14px!important}
+ #page-timeline .tl-month button{padding:4px 9px}
+}
