@@ -58,3 +58,17 @@
 input[type=date],input[type=time]{min-width:0!important;max-width:100%!important;box-sizing:border-box}
 @media(max-width:375px){#fund-grid .wallet-fund{padding:9px 6px;min-height:125px}#fund-grid .wallet-fund strong{font-size:11px}
 #fund-grid .wallet-fund .yen{font-size:15px}#fund-grid .wallet-fund .tiny{font-size:10px}}
+
+/* WebKit date/time intrinsic minimums must not widen mobile editors */
+.tl-modal,.tl-editor,.tl-editor #tl-post-form,.tl-editor .tl-editor-meta,
+.tl-editor .tl-editor-meta label{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+.tl-editor .tl-editor-meta{grid-template-columns:minmax(0,1fr)!important;overflow-x:hidden!important}
+.tl-editor .tl-editor-meta input:is([type=date],[type=time]){
+ -webkit-appearance:none;appearance:none;min-width:0!important;max-width:100%!important;
+ width:100%!important;inline-size:100%!important;overflow:hidden!important;
+ font-size:16px!important;box-sizing:border-box!important;
+}
+.tl-editor .tl-editor-meta input::-webkit-date-and-time-value{min-width:0!important;text-align:center!important}
+.tl-editor .tl-editor-meta input::-webkit-datetime-edit{min-width:0;max-width:100%;overflow:hidden}
+.wallet-old-history{margin-top:12px;padding-top:10px;border-top:1px solid var(--theme-line)}
+.wallet-old-history summary{cursor:pointer;font-size:12px;color:var(--theme-accent)}
