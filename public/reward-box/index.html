@@ -104,7 +104,7 @@ input,textarea,select{font-size:16px!important}
 <link rel="stylesheet" href="./morning-guanyin.css?v=20261015-1">
 <link rel="stylesheet" href="./app-stability.css?v=20261015-12">
 <link rel="stylesheet" href="./ios-editor-fixes.css?v=20261015-20">
-<link rel="stylesheet" href="./wallet-upgrade.css?v=20261015-21">
+<link rel="stylesheet" href="./wallet-upgrade.css?v=20261015-22">
 </head>
 <body><header aria-label="現在の残高" class="slim-header">
 <button aria-label="メニューを開く" class="top-action" id="menu-open" type="button"><span aria-hidden="true">☰</span></button>
@@ -220,7 +220,7 @@ input,textarea,select{font-size:16px!important}
 <p class="minor">全132種類の単一ガチャ。北海道貯金10円につき北海道ジュエル1個、100個で1回、1,000個で10連。貯金した現金は減りません。</p>
 <p class="minor">SSR以上が10回連続で出なければ10回目にSSR以上、UR以上が40回連続で出なければ40回目にUR以上確定。単発・10連共通、各レア内でカードを均等抽選します。</p>
 <p class="minor">15万円貯金達成で鳳長太郎MR確定。重複カードから交換メダルを獲得できます。選択券・メダルは北海道の「引換所」で使用します。MRは交換対象外です。</p></div><div class="panel"><h3>基礎能力ptの採点</h3><p class="minor">フィジカル：日本語・英語のスピーチ25、文法15、単語15、精読10。フランス語は順に20・10・10・5。</p><p class="minor">メンタル：録画練習25、業界・企業研究15、人物像・エピソード整理15、ペーパーワーク10。</p><p class="minor">テクニック：哲学原著25、一般文献15。各系統は1日25ptが上限。</p><p class="minor">日本語スピーチと就活録画練習は、両条件を満たす場合に重複取得できます。</p></div><div class="panel"><h3>ニャンコインの生活採点</h3><p class="minor">日常320🐱：起床35、睡眠40、水分35、食事60、入浴30、洗顔10×2、歯磨き15×2、スキンケア20、日常家事30、DB記録20。</p><p class="minor">周期家事560🐱／週：洗濯90、床掃除90、浴室90、トイレ70、キッチン70、ごみ40、寝具60、収納50。</p></div></div>
-<div id="content-basic"><div class="panel" id="app-basic-settings"></div></div><div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
+<div id="content-basic"><div class="panel" id="app-basic-settings"></div><div class="panel" id="app-build-diagnostic"><div class="heading"><h3>アプリのバージョン</h3><span class="badge">2026.10.15-22</span></div><p class="minor" id="app-module-status">更新状態を確認中…</p></div></div><div id="content-settings"><div class="panel"><div id="cp-settings"></div></div></div>
 <div id="content-backup"><div class="panel"><h3>データのバックアップ</h3><p class="minor">記録はブラウザ内に自動保存されます。定期的にJSONファイルへバックアップしてください。</p><div class="formrow"><button class="btn secondary" id="export-btn" type="button">↓ 書き出す</button><button class="btn outline" id="import-btn" type="button">↑ 復元する</button><input accept="application/json,.json" id="import-file" type="file"/></div></div></div>
 <div id="content-exchange"><div class="panel"><h3>🎟️ 姫猫ご褒美・引換所</h3><div class="resource-strip" id="exchange-counts"></div><div id="stock-list"></div></div></div><div id="content-morning-exchange"><div class="panel"><h3>📜 観音霊籤・百籤図鑑</h3><div id="gyn-catalogue-root"></div></div></div><div id="content-hk-exchange"><div class="panel"><h3>✈️ 北海道ロマン・引換所</h3><div id="hkg-exchange-root"></div></div></div>
 <div id="content-gacha-history"><div class="panel"><h3>ごほうびガチャ履歴</h3><div id="gacha-history-list"></div></div></div>
@@ -241,7 +241,7 @@ input,textarea,select{font-size:16px!important}
 <script src="./character-profiles.js?v=20261015-8"></script>
 <!-- Keep native select on iOS; custom select caused a second popup. -->
 <script src="./language-fix.js?v=20261015-12"></script>
-<script src="./wallet-upgrade.js?v=20261015-21"></script>
+<script src="./wallet-upgrade.js?v=20261015-22"></script>
 <script>
 (()=>{'use strict';
 const STORAGE='hime-reward-v2', OLD_STORAGE='hime-reward-v1';
@@ -446,8 +446,8 @@ function renderLedgerExtra(){const src=$('ledger-source').value,t=$('ledger-type
  else cont.innerHTML='';
 }
 function renderFinance(){const d=today();$('living-status').textContent=`${money(todayLivingSpent())} / 3,000円`;$('debt-status').textContent=money(state.debt);$('ledger-count').textContent=state.ledger.length+'件';
- $('ledger-list').innerHTML=state.ledger.length?state.ledger.slice(0,150).map(x=>`<div class="ledger-entry"><div><b>${esc(x.note||x.category||'記録')}</b><small>${esc(x.date)} · ${esc(x.label)}${x.debtAdded?' · 借金+'+money(x.debtAdded):''}</small></div><div class="sum ${x.type==='income'?'income':''}">${x.type==='income'?'+':'−'}${money(x.amount)}</div></div>`).join(''):'<p class="minor">まだ記録がありません。</p>';
- $('wallet-total').textContent=money(totalFunds());$('fund-grid').innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([k,e,n])=>`<div class="fund"><div class="emoji">${e}</div><strong>${n}</strong><span class="yen">${money(state.funds[k]||0)}</span><div class="tiny dim">今日使える ${money(availableFund(k))}</div></div>`).join('')+`<div class="fund date"><div class="emoji">💗</div><strong>デート資金 🔒</strong><span class="yen">${money(state.dateLocked)}</span><div class="tiny dim">入金専用・目標なし</div></div><div class="fund"><div class="emoji">✈️</div><strong>北海道貯金 🔒</strong><span class="yen">${money(state.savings)}</span><div class="tiny dim">目標 150,000円</div></div>`;
+ if(!window.WalletUpgrade)$('ledger-list').innerHTML=state.ledger.length?state.ledger.slice(0,150).map(x=>`<div class="ledger-entry"><div><b>${esc(x.note||x.category||'記録')}</b><small>${esc(x.date)} · ${esc(x.label)}${x.debtAdded?' · 借金+'+money(x.debtAdded):''}</small></div><div class="sum ${x.type==='income'?'income':''}">${x.type==='income'?'+':'−'}${money(x.amount)}</div></div>`).join(''):'<p class="minor">まだ記録がありません。</p>';
+ $('wallet-total').textContent=money(totalFunds());if(!window.WalletUpgrade)$('fund-grid').innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([k,e,n])=>`<div class="fund"><div class="emoji">${e}</div><strong>${n}</strong><span class="yen">${money(state.funds[k]||0)}</span><div class="tiny dim">今日使える ${money(availableFund(k))}</div></div>`).join('')+`<div class="fund date"><div class="emoji">💗</div><strong>デート資金 🔒</strong><span class="yen">${money(state.dateLocked)}</span><div class="tiny dim">入金専用・目標なし</div></div><div class="fund"><div class="emoji">✈️</div><strong>北海道貯金 🔒</strong><span class="yen">${money(state.savings)}</span><div class="tiny dim">目標 150,000円</div></div>`;
  $('date-reserve').textContent=money(state.dateLocked);$('saving-inline').textContent=money(state.savings);
  $('date-total').textContent=money(state.dateLocked);
  Array.from($('fund-select').options).forEach(o=>{o.disabled=state.debt>0&&o.value!=='debt'});if(state.debt>0)$('fund-select').value='debt';
@@ -554,7 +554,12 @@ function renderShop(){const cs=CHAR_BY_ID[shopChar];$('shop-recipient').value=sh
  const goods=GIFTS.filter(g=>g.type===shopTab&&(shopTab!=='special'||g.cid===shopChar));$('shop-item-count').textContent=goods.length+'種';
  $('shop-items').innerHTML=goods.map(g=>{const purchased=!!state.gifts[shopChar]?.includes(g.id),oneTime=g.type!=='food',disabled=(oneTime&&purchased)||state.resources.coins<g.price;const val=giftValue(g,shopChar);return `<div class="shop-item"><div><div class="gift-title">${g.rank&&g.type==='special'?['Ⅰ','Ⅱ','Ⅲ','Ⅳ'][g.rank-1]+' · ':''}${esc(g.name)}</div><div class="gift-desc">${esc(giftLabel(g,shopChar))}${g.type==='fashion'?' · '+({shoes:'シューズ',bags:'バッグ',wear:'服',accessories:'アクセサリー'}[g.group]):''}</div><div class="bonus">🐱 ${fmt(g.price)} → 💗 +${val}</div></div><button type="button" class="btn ${purchased&&oneTime?'ghost':'secondary'}" data-gift="${g.id}" ${disabled?'disabled':''}>${purchased&&oneTime?'贈呈済み':'贈る'}</button></div>`}).join('')}
 function render(){window.DailyTimeline.migrate(state);window.DateSystem.migrate(state,CHARS);window.AppSettings.sane(state);renderStats();renderInput();renderCharacters();renderShop();window.HokkaidoGacha.render(state);try{window.GuanyinMorning?.render(state)}catch(err){console.warn('朝の運試し表示をスキップ:',err)}window.CharacterProfiles.render();window.CharacterStamps.renderSettings(state);window.AppSettings.render(state);
- const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);window.WalletUpgrade?.render();}
+ const st=$('stamp-tickets-list');const ticketCount=$('stamp-ticket-count');if(ticketCount)ticketCount.textContent=CHARS.reduce((n,c)=>n+window.CharacterStamps.reconcileTickets(state,c.id),0)+'枚';if(st)st.innerHTML=CHARS.map(c=>({c,count:window.CharacterStamps.reconcileTickets(state,c.id)})).filter(x=>x.count||state.stampTickets[x.c.id]?.spent).map(x=>'<div class="listitem"><b>'+esc(x.c.name)+'</b><span>🎟️ '+x.count+'枚</span></div>').join('')||'<p class="minor">休み券はまだありません。</p>';window.DailyTimeline.render(state);
+ try{
+   if(window.WalletUpgrade){window.WalletUpgrade.render();const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュール：読み込み済み';}
+   else{const diag=$('app-module-status');if(diag)diag.textContent='家計・履歴モジュール：読み込めていません（再読み込みをお試しください）';}
+ }catch(err){console.error('家計画面描画エラー:',err);const diag=$('app-module-status');if(diag)diag.textContent='家計画面でエラーが発生しました：'+(err.message||'不明');}
+}
 function bind(){const fundSel=$('fund-select'),source=$('saving-source');fundSel.innerHTML=FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}</option>`).join('')+'<option value="date">💗 デート資金🔒</option><option value="debt">💸 借金返済</option>';source.innerHTML='<option value="outside">🌱 予算外から</option>'+FUND_META.filter(x=>x[0]!=='date').map(([id,e,n])=>`<option value="${id}">${e} ${n}から移す</option>`).join('');$('date-source').innerHTML=source.innerHTML;$('shop-recipient').innerHTML=CHARS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('training-date').value=today();$('ledger-date').value=today();
   document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{closeDrawers();selectTab(b.dataset.tab)}));
   document.querySelectorAll('[data-walletview]').forEach(b=>b.addEventListener('click',()=>setWalletView(b.dataset.walletview)));document.querySelectorAll('[data-charpage].segment-btn').forEach(b=>b.addEventListener('click',()=>switchCharPage(b.dataset.charpage)));
@@ -666,7 +671,8 @@ window.CharacterProfiles.bind(characterApi);
 window.DateSystem.bind({state:()=>state,chars:CHARS,current:()=>window.CharacterProfiles.current(),canDate:cid=>window.CharacterStamps.flames(state,cid)>0,save:()=>{persist();render()},render:()=>window.CharacterProfiles.render(),toast,logDate:item=>{state.ledger.unshift(item);log('ledger',item.note,'−'+money(item.amount))}});
 window.AppSettings.bind({state:()=>state,save:()=>{persist();render()}});
 window.DailyTimeline.bind({state:()=>state,save:()=>{persist();render()},toast});
-window.WalletUpgrade.bind({state:()=>state,persist,render,log,toast,today,availableFund,availableDate});
+if(window.WalletUpgrade)try{window.WalletUpgrade.bind({state:()=>state,persist,render,log,toast,today,availableFund,availableDate})}
+ catch(err){console.error('家計機能初期化エラー:',err);const diag=$('app-module-status');if(diag)diag.textContent='家計モジュールの初期化に失敗しました：'+err.message;}
 try{window.HokkaidoGacha.bind({getState:()=>state,toast,log,persist,render});window.HokkaidoGacha.render(state)}catch(err){console.error('北海道ガチャ表示エラー:',err);toast('北海道ガチャを読み込めませんでした')}try{window.GuanyinMorning?.bind({state:()=>state,persist,render,toast,openPage})}catch(err){console.warn('朝の運試しの初期化に失敗:',err)}render();}
 bind();
 })();
