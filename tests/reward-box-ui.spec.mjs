@@ -15,7 +15,7 @@ test('points are visible beneath the canonical character screen and switch tabs'
 test('new earned points appear without refreshing the page',async({page})=>{
  await openApp(page);
  await page.evaluate(()=>{
-  const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const date='2026-10-16';
   document.querySelector('#training-date').value=date;
   document.querySelector('#earn-physical').value='5';
   document.querySelector('#training-form').requestSubmit();
