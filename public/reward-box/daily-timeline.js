@@ -8,6 +8,84 @@ function migrate(s){if(!Array.isArray(s.timelinePosts))s.timelinePosts=[];s.time
 let api=null,chosen=nowJST().slice(0,10),month=chosen.slice(0,7),modal=null,activeImages=[],editing=null,pendingImages=0,lastRange=null;
 let calendarCompact=false;
 try{calendarCompact=localStorage.getItem('hime-calendar-compact')==='1'}catch(_){}
+/* Store large photos in IndexedDB so the small localStorage save quota is not consumed. */
+const imageRef=/^idb:[a-z0-9-]+$/i;
+const inlinePhoto=/^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i;
+let imageDatabase=null;
+function photoDB(){
+ if(imageDatabase)return imageDatabase;
+ imageDatabase=new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window)){reject(new Error('IndexedDB unsupported'));return;}
+  let r;try{r=indexedDB.open('hime-timeline-photos',1)}catch(e){reject(e);return}
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('photos'))r.result.createObjectStore('photos')};
+  r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('Photo storage unavailable'));
+ });
+ return imageDatabase;
+}
+async function savePhoto(data){
+ if(imageRef.test(data))return data;
+ if(!inlinePhoto.test(data))throw new Error('Invalid image');
+ const db=await photoDB(),key=id();
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction('photos','readwrite');tx.objectStore('photos').put(data,key);
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Photo write failed'));
+  tx.onabort=()=>reject(tx.error||new Error('Photo write aborted'));
+ });
+ return 'idb:'+key;
+}
+async function readPhoto(src){
+ if(!imageRef.test(src))return src;
+ const db=await photoDB();
+ return new Promise((resolve,reject)=>{
+  const r=db.transaction('photos','readonly').objectStore('photos').get(src.slice(4));
+  r.onsuccess=()=>resolve(typeof r.result==='string'?r.result:'');
+  r.onerror=()=>reject(r.error||new Error('Photo read failed'));
+ });
+}
+function hydrateImages(root){
+ if(!root)return;
+ root.querySelectorAll('img[data-tl-photo-ref]').forEach(async img=>{
+  const key=img.getAttribute('data-tl-photo-ref');
+  try{const src=await readPhoto(key);if(img.isConnected&&src)img.src=src;}
+  catch(e){console.warn('写真を読み込めません:',e)}
+ });
+}
+function photoMarkup(src,attrs=''){
+ if(imageRef.test(src))return '<img alt="投稿画像" '+attrs+' data-tl-photo-ref="'+E(src)+'">';
+ return '<img alt="投稿画像" '+attrs+' src="'+src+'">';
+}
+async function exportPhotos(state){
+ const copy=JSON.parse(JSON.stringify(state));
+ for(const post of copy.timelinePosts||[]){
+  if(!Array.isArray(post.images))continue;
+  post.images=await Promise.all(post.images.map(src=>readPhoto(src)));
+ }
+ return copy;
+}
+async function importPhotos(state){
+ for(const post of state.timelinePosts||[]){
+  if(!Array.isArray(post.images))continue;
+  post.images=await Promise.all(post.images.map(src=>inlinePhoto.test(src)?savePhoto(src):src));
+ }
+ return state;
+}
+async function migrateLegacyPhotos(state){
+ const changes=[];
+ for(const post of state.timelinePosts||[]){
+  if(!Array.isArray(post.images)||!post.images.some(src=>inlinePhoto.test(src)))continue;
+  const original=[...post.images];
+  try{
+   const moved=await Promise.all(original.map(src=>inlinePhoto.test(src)?savePhoto(src):src));
+   changes.push({post,original,moved});
+  }catch(e){console.warn('旧画像の移行をスキップ:',e);return;}
+ }
+ if(!changes.length)return;
+ for(const c of changes)c.post.images=c.moved;
+ try{api.save()}catch(e){
+  for(const c of changes)c.post.images=c.original;
+  console.warn('旧画像を元の状態に戻しました:',e);
+ }
+}
 function clean(html){
  const input=document.createElement('template');input.innerHTML=String(html||'').slice(0,100000);
  const allowed=new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','SPAN','DIV','P','BR']);
@@ -47,16 +125,17 @@ function render(s){
  root.innerHTML='<div class="tl-wrap"><div class="tl-calendar '+(calendarCompact?'is-compact':'is-month')+'"><div class="tl-month"><button data-tl-month="-1" type="button" aria-label="'+(calendarCompact?'前の週':'前の月')+'">‹</button><strong>'+(calendarCompact?(chosen.slice(0,4)+'年'+Number(chosen.slice(5,7))+'月'+Number(chosen.slice(8,10))+'日'):month.replace('-','年')+'月')+'</strong><button data-tl-month="1" type="button" aria-label="'+(calendarCompact?'次の週':'次の月')+'">›</button><button class="tl-toggle" data-tl-toggle type="button" aria-expanded="'+(!calendarCompact)+'" aria-label="'+(calendarCompact?'月表示に展開':'週表示に折りたたむ')+'" title="'+(calendarCompact?'月表示':'週表示')+'">'+(calendarCompact?'▦':'⌃')+'</button></div><div class="tl-week">'+['日','月','火','水','木','金','土'].map(d=>'<span>'+d+'</span>').join('')+'</div><div class="tl-days">'+grid+'</div></div>'+
  '<div class="tl-timeline"><div class="tl-timeline-head"><div><small>MY TIMELINE</small><h3>'+E(chosen)+' のタイムライン</h3></div><button type="button" class="tl-compose" data-tl-new>＋ 投稿する</button></div>'+
  (posts(s,chosen).map(p=>{
- const isReady=visible(p),safeImages=(p.images||[]).filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
+ const isReady=visible(p),safeImages=(p.images||[]).filter(x=>typeof x==='string'&&(inlinePhoto.test(x)||imageRef.test(x)));
  return '<article class="tl-post '+(!isReady?'scheduled':'')+'"><div class="tl-post-head"><span>'+(isReady?'公開':'予約投稿')+' · '+E(p.time)+'</span><button type="button" data-tl-edit="'+E(p.id)+'">編集</button></div>'+
  (isReady?'<div class="tl-post-body">'+clean(p.html)+'</div>':'<p class="tl-waiting">設定した公開時刻になると内容が表示されます。編集からプレビューできます。</p>')+
- (isReady&&safeImages.length?'<div class="tl-images">'+safeImages.map(src=>'<img alt="投稿画像" loading="lazy" src="'+src+'">').join('')+'</div>':'')+'</article>';
+ (isReady&&safeImages.length?'<div class="tl-images">'+safeImages.map(src=>photoMarkup(src,'loading="lazy"')).join('')+'</div>':'')+'</article>';
  }).join('')||'<p class="tl-empty">まだ投稿がありません。カレンダーの「投稿する」から書いてみよう。</p>')+'</div></div>';
+ hydrateImages(root);
 }
 function openEditor(post){
  if(modal)modal.remove();
  editing=post?.id||null;pendingImages=0;lastRange=null;
- activeImages=[...(post?.images||[])].filter(x=>typeof x==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x));
+ activeImages=[...(post?.images||[])].filter(x=>typeof x==='string'&&(inlinePhoto.test(x)||imageRef.test(x)));
  modal=document.createElement('div');modal.className='tl-modal';modal.innerHTML='<div class="tl-editor" role="dialog" aria-modal="true" aria-label="タイムライン投稿の編集"><header><strong>'+(post?'投稿を編集':'新しい投稿')+'</strong><button type="button" data-tl-close aria-label="閉じる">×</button></header><form id="tl-post-form"><div class="tl-editor-meta"><label>投稿日<input name="date" type="date" required value="'+E(post?.date||chosen)+'"></label><label>公開予定時刻<input name="time" type="time" required value="'+E(post?.time||nowJST().slice(11,16))+'"></label></div>'+
  '<div class="tl-toolbar" role="toolbar" aria-label="文字装飾"><button type="button" data-tl-command="bold" title="太字"><b>B</b></button><button type="button" data-tl-command="italic" title="斜体"><i>I</i></button><button type="button" data-tl-command="underline" title="下線"><u>U</u></button><button type="button" data-tl-command="strikeThrough" title="取消線"><s>S</s></button><label title="文字色">文字色<input type="color" id="tl-color" value="#7955a6"></label><button type="button" data-tl-now title="現在時刻を本文に挿入">🕒 今の時間</button></div>'+
  '<div id="tl-content" contenteditable="true" role="textbox" aria-label="本文" aria-multiline="true" data-placeholder="今日の出来事や予定を書こう"></div>'+
@@ -105,24 +184,27 @@ function openEditor(post){
    const s=api.state(),before=s.timelinePosts;s.timelinePosts=s.timelinePosts.filter(p=>p.id!==editing);saveAndClose(()=>{s.timelinePosts=before});
   }
  });
- modal.querySelector('#tl-post-form').addEventListener('submit',e=>{
+ modal.querySelector('#tl-post-form').addEventListener('submit',async e=>{
   e.preventDefault();
   if(pendingImages)return api.toast('画像の読み込みが終わるまでお待ちください');
   const s=api.state(),date=e.target.elements.date.value,time=e.target.elements.time.value,html=clean(modal.querySelector('#tl-content').innerHTML);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))return api.toast('日時を確認してください');
   if(!html.replace(/<[^>]+>/g,'').trim()&&!activeImages.length)return api.toast('本文か画像を追加してください');
-  const prev=s.timelinePosts.find(x=>x.id===editing),backup=prev?{...prev,images:[...(prev.images||[])]}:null,p={id:editing||id(),date,time,html,images:[...activeImages],created:prev?.created||new Date().toISOString(),updated:new Date().toISOString()};
+  let storedImages;
+   try{storedImages=await Promise.all(activeImages.map(src=>savePhoto(src)))}
+   catch(err){console.error('写真の保存に失敗:',err);return api.toast('写真の保存に失敗しました。ブラウザの空き容量を確認してください')}
+   const prev=s.timelinePosts.find(x=>x.id===editing),backup=prev?{...prev,images:[...(prev.images||[])]}:null,p={id:editing||id(),date,time,html,images:storedImages,created:prev?.created||new Date().toISOString(),updated:new Date().toISOString()};
   if(prev)Object.assign(prev,p);else s.timelinePosts.push(p);
   chosen=date;month=date.slice(0,7);
   saveAndClose(()=>{if(backup)Object.assign(prev,backup);else s.timelinePosts=s.timelinePosts.filter(x=>x.id!==p.id)});
  });
 }
 function saveAndClose(revert){
- try{api.save();modal?.remove();modal=null;editing=null;activeImages=[];api.toast('タイムラインを保存しました')}catch(e){revert?.();api.toast('保存できません。画像数や容量を減らして再試行してください')}
+ try{api.save();modal?.remove();modal=null;editing=null;activeImages=[];api.toast('タイムラインを保存しました')}catch(e){console.error('投稿保存エラー:',e);revert?.();api.toast(e?.name==='QuotaExceededError'?'ブラウザの記録容量がいっぱいです。バックアップを取ってください':'保存できません。もう一度お試しください')}
 }
 function preview(){
  const target=modal.querySelector('#tl-image-preview');
- target.innerHTML=activeImages.map((src,i)=>'<div><img src="'+src+'" alt="アップロード画像"><button type="button" data-tl-image-remove="'+i+'">×</button></div>').join('');
+ target.innerHTML=activeImages.map((src,i)=>'<div>'+photoMarkup(src)+'<button type="button" data-tl-image-remove="'+i+'">×</button></div>').join('');hydrateImages(target);
 }
 function loadFiles(files){
  const valid=files.filter(f=>f.type.startsWith('image/')).slice(0,Math.max(0,4-activeImages.length));
@@ -141,7 +223,7 @@ function loadFiles(files){
  }
 }
 function openImageLightbox(src){
- if(typeof src!=='string'||!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(src))return;
+ if(typeof src!=='string'||!inlinePhoto.test(src))return;
  const existing=document.getElementById('tl-lightbox');if(existing)existing.remove();
  const lightbox=document.createElement('div');lightbox.id='tl-lightbox';lightbox.className='tl-lightbox';
  const image=document.createElement('img');image.src=src;image.alt='拡大した写真';
@@ -160,6 +242,7 @@ function bind(context){
   if(img)openImageLightbox(img.src);
  });
  migrate(api.state());
+ migrateLegacyPhotos(api.state());
  root.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.tlMonth){if(calendarCompact){const d=new Date(chosen+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+7*Number(b.dataset.tlMonth));chosen=d.toISOString().slice(0,10);month=chosen.slice(0,7)}else month=nextMonth(month,Number(b.dataset.tlMonth));render(api.state());return}
@@ -171,5 +254,5 @@ function bind(context){
  setInterval(()=>{if(document.getElementById('page-timeline')?.classList.contains('active')&&!modal)render(api.state());},60000);
  render(api.state());
 }
-window.DailyTimeline={bind,render,migrate,clean,posts,visible,openImageLightbox};
+window.DailyTimeline={bind,render,migrate,clean,posts,visible,openImageLightbox,exportPhotos,importPhotos};
 })();
