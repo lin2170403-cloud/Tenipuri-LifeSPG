@@ -5,7 +5,8 @@ const day=(d=new Date())=>{if(window.AppSettings)return window.AppSettings.dayKe
 const shift=(date,n)=>{const d=new Date(date+'T12:00:00+09:00');d.setUTCDate(d.getUTCDate()+n);return day(d);};
 const id=()=>`book_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
 let api,chosen=null,edit=null,draft=null,month=day().slice(0,7),selectedDay=day(),feedback='';
-const img=(value,cl='')=>value?`<img class="${cl}" src="${value}" alt="">`:'';
+const img=(value,cl='')=>window.AppPhotos?.renderImage(value,cl)||'';
+const bg=value=>window.AppPhotos?.bgAttrs(value)||'';
 const conf=(s,c)=>s.charStamps[c],book=(s,c)=>conf(s,c)?.books.find(b=>b.id===conf(s,c).active)||null;
 function migrate(s,characters) {
  if(!s.charStamps||typeof s.charStamps!=='object')s.charStamps={};
@@ -40,7 +41,7 @@ function calendar(s,c) {
  const b=book(s,c),t=day();
  if(!b)return `<div class="cp-notice">有効なスタンプ帳がありません。設定から追加してください。</div><button class="cp-action" data-cp-settings="${c}">設定へ</button>`;
  const [y,m]=month.split('-').map(Number),first=new Date(Date.UTC(y,m-1,1)).getUTCDay(),count=new Date(Date.UTC(y,m,0)).getUTCDate();
- return `<section class="cp-calendar"><div class="cp-header" ${b.header?`style="background-image:url('${b.header}')"`:''}><h2>${esc(b.name)}</h2><p>${esc(b.note)}</p></div>
+ return `<section class="cp-calendar"><div class="cp-header" ${bg(b.header)}><h2>${esc(b.name)}</h2><p>${esc(b.note)}</p></div>
   <div class="cp-month"><button data-cp-month="-1">‹</button><b>${y}年 ${m}月</b><button data-cp-month="1">›</button></div>
   <div class="cp-week">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(x=>`<b>${x}</b>`).join('')}</div>
   <div class="cp-days">${Array(first).fill('<div></div>').join('')}${Array.from({length:count},(_,i)=>{
@@ -81,15 +82,15 @@ function renderSettings(s){
  <div class="cp-set-grid">${api.chars.map(c=>`<button data-cp-person="${c.id}"><div>${img(conf(s,c.id).avatar)||esc(c.name)}</div><small>${esc(c.name)}</small><em>${conf(s,c.id).books.length}冊</em></button>`).join('')}</div>`;return;}
  const c=api.chars.find(x=>x.id===chosen),x=conf(s,chosen);
  root.innerHTML=`<button data-cp-go-back class="cp-back">‹ 12人の設定へ</button><div class="cp-avatar-editor">
- <div class="cp-avatar-circle">${img(x.avatar)||esc(c.name)}</div><div><h3>${esc(c.name)}</h3><button data-cp-upload="avatar" class="cp-action">📷 头像をアップロード</button></div></div>
+ <div class="cp-avatar-circle">${img(x.avatar)||esc(c.name)}</div><div><h3>${esc(c.name)}</h3><label class="cp-file-picker cp-action">📷 写真をアップロード<input type="file" data-cp-file="avatar" accept="image/*,.heic,.heif"></label></div></div>
  <div class="cp-between"><h3>打刻帳 ${x.books.length}冊</h3><button data-cp-add class="cp-action">＋ 新規作成</button></div>
  ${x.books.map(b=>`<div class="cp-book-row"><div><b>${esc(b.name)}</b><small>${x.active===b.id?'● 使用中':'○ 停止中'} · ${Object.keys(b.days).length}日</small></div>
  <button data-cp-activate="${b.id}" ${x.active===b.id?'disabled':''}>使用</button><button data-cp-edit="${b.id}">編集</button><button data-cp-delete="${b.id}">削除</button></div>`).join('')||'<p class="cp-notice">まだ打刻帳がありません。</p>'}
  ${edit!==null?`<form id="cp-editor"><h3>${edit==='new'?'新しい打刻帳':'打刻帳を編集'}</h3>
  <label>目標（必須）<input name="name" maxlength="80" required value="${esc(draft.name)}" placeholder="早起き"></label>
  <label>備考<textarea name="note" rows="2" maxlength="300">${esc(draft.note)}</textarea></label>
- <div class="cp-uploads"><div><b>Header 画像</b><div class="cp-preview-header" ${draft.header?`style="background-image:url('${draft.header}')"`:''}></div><button data-cp-upload="header" type="button">画像選択</button></div>
- <div><b>Stamp（円形に切抜き）</b><div class="cp-preview-stamp">${img(draft.stamp,'cp-stamp-img')||'◯'}</div><button data-cp-upload="stamp" type="button">画像選択</button></div></div>
+ <div class="cp-uploads"><div><b>Header 画像</b><div class="cp-preview-header" ${bg(draft.header)}></div><label class="cp-file-picker">画像選択<input type="file" data-cp-file="header" accept="image/*,.heic,.heif"></label></div>
+ <div><b>Stamp（円形に切抜き）</b><div class="cp-preview-stamp">${img(draft.stamp,'cp-stamp-img')||'◯'}</div><label class="cp-file-picker">画像選択<input type="file" data-cp-file="stamp" accept="image/*,.heic,.heif"></label></div></div>
  <div class="cp-between"><b>押印時のセリフと出現確率</b><button data-cp-addmsg type="button">＋ 追加</button></div>
  <p class="cp-help">合計100%以下。余りは通常の応援セリフになります。</p>
  ${draft.messages.map((m,i)=>`<div class="cp-msg"><textarea data-cp-msg="${i}" rows="2">${esc(m.text)}</textarea><label><input type="number" data-cp-prob="${i}" min="0" max="100" step="1" value="${m.chance}">%</label><button data-cp-delmsg="${i}" type="button">×</button></div>`).join('')}
@@ -125,22 +126,40 @@ function crop(kind,imgObj){
  c.drawImage(imgObj,(w-iw)/2+q.x*(iw-w)/200,(h-ih)/2+q.y*(ih-h)/200,iw,ih);c.restore();};
  host.querySelectorAll('[data-cp-crop]').forEach(el=>el.oninput=()=>{q[el.dataset.cpCrop]=Number(el.value);paint();});
  host.querySelector('[data-cp-crop-cancel]').onclick=()=>host.remove();
- host.querySelector('[data-cp-crop-save]').onclick=()=>{
- const value=canvas.toDataURL(kind==='stamp'?'image/png':'image/jpeg',.75);
- if(kind==='avatar')conf(api.getState(),chosen).avatar=value;
- else if(draft)draft[kind]=value;
- host.remove();try{api.save();renderSettings(api.getState());}catch(error){api.toast('画像を保存できません。小さい画像を使用してください');}};paint();
+ host.querySelector('[data-cp-crop-save]').onclick=async()=>{
+ const button=host.querySelector('[data-cp-crop-save]');button.disabled=true;
+ try{
+  const encoded=canvas.toDataURL(kind==='stamp'?'image/png':'image/jpeg',0.7);
+  const value=await window.AppPhotos.put(encoded);
+  if(kind==='avatar'){
+   const person=conf(api.getState(),chosen),previous=person.avatar;
+   person.avatar=value;
+   try{api.save()}catch(e){person.avatar=previous;throw e}
+  }else if(draft)draft[kind]=value;
+  host.remove();renderSettings(api.getState());api.toast('写真を追加しました');
+ }catch(error){console.error('スタンプ画像保存失敗:',error);api.toast('画像の保存に失敗しました。空き容量と画像形式を確認してください');button.disabled=false;}
+};paint();
 }
 function fileChosen(kind,f){
- if(!f||!f.type.startsWith('image/'))return api.toast('画像ファイルを選んでください');
- if(f.size>15*1024*1024)return api.toast('15MB以下の画像を選んでください');
- const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>crop(kind,im);im.onerror=()=>api.toast('画像を読み込めません');im.src=r.result;};r.readAsDataURL(f);
+ if(!f)return;
+ if(!f.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name||''))return api.toast('画像ファイルを選んでください');
+ if(f.size>20*1024*1024)return api.toast('20MB以下の画像を選んでください');
+ let url;
+ try{url=URL.createObjectURL(f)}catch(e){return api.toast('画像ファイルを開けませんでした')}
+ const image=new Image();let completed=false;
+ const fail=()=>{if(completed)return;completed=true;URL.revokeObjectURL(url);api.toast('画像を読み込めません。JPEGかPNGで試してください')};
+ image.onload=()=>{if(completed)return;completed=true;try{crop(kind,image)}catch(error){console.error(error);api.toast('画像を開けませんでした')}finally{URL.revokeObjectURL(url)}};
+ image.onerror=fail;image.src=url;
 }
 function bind(context) {
  api=context;migrate(api.getState(),api.chars);
  const root=document.getElementById('cp-settings');
- const file=document.createElement('input');file.type='file';file.accept='image/*';file.hidden=true;document.body.appendChild(file);
- file.onchange=()=>{const f=file.files[0];file.value='';if(f)fileChosen(uploadKind,f)};
+ root.addEventListener('change',ev=>{
+  const input=ev.target.closest('input[data-cp-file]');
+  if(!input)return;
+  const kind=input.dataset.cpFile,chosenFile=input.files?.[0];input.value='';
+  if(chosenFile)fileChosen(kind,chosenFile);
+ });
  root.addEventListener('input',ev=>{
  const t=ev.target;if(t.name==='name'&&draft)draft.name=t.value;
  if(t.name==='note'&&draft)draft.note=t.value;
@@ -157,13 +176,14 @@ function bind(context) {
  if(b.hasAttribute('data-cp-cancel')){edit=null;renderSettings(s);return;}
  if(b.hasAttribute('data-cp-addmsg')){draft.messages.push({text:'',chance:0});renderSettings(s);return;}
  if(b.dataset.cpDelmsg!==undefined){draft.messages.splice(Number(b.dataset.cpDelmsg),1);renderSettings(s);return;}
- if(b.dataset.cpUpload){uploadKind=b.dataset.cpUpload;file.click();return;}
+ 
  if(b.dataset.cpActivate){conf(s,chosen).active=b.dataset.cpActivate;api.save();return;}
  if(b.dataset.cpDelete){const x=conf(s,chosen),item=x.books.find(v=>v.id===b.dataset.cpDelete);
  if(!item||!window.confirm('「'+item.name+'」を打刻履歴ごと削除しますか？'))return;
  x.books=x.books.filter(v=>v.id!==item.id);if(x.active===item.id)x.active=x.books[0]?.id||null;edit=null;api.save();}
  });
  renderSettings(api.getState());
+ window.AppPhotos?.migrate(api.getState(),api.save).catch(error=>console.warn('既存画像の移行をスキップ:',error));
 }
 function open(c) {chosen=c;edit=null;api.openSettings();renderSettings(api.getState());}
 function chooseDay(value){if(/^\d{4}-\d{2}-\d{2}$/.test(value))selectedDay=value;}

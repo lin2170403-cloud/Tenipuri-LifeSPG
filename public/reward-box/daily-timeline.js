@@ -6,6 +6,7 @@ const parts=(d)=>{const [y,m]=d.split('-').map(Number);return {first:new Date(Da
 const nextMonth=(m,delta)=>{const [y,mon]=m.split('-').map(Number),v=new Date(Date.UTC(y,mon-1+delta,1));return v.toISOString().slice(0,7)};
 function migrate(s){if(!Array.isArray(s.timelinePosts))s.timelinePosts=[];s.timelinePosts=s.timelinePosts.filter(p=>p&&typeof p.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(p.date));}
 let api=null,chosen=nowJST().slice(0,10),month=chosen.slice(0,7),modal=null,activeImages=[],editing=null,pendingImages=0,lastRange=null;
+let editorScrollY=0,editorBodyStyle=null;
 let calendarCompact=false;
 try{calendarCompact=localStorage.getItem('hime-calendar-compact')==='1'}catch(_){}
 /* Store large photos in IndexedDB so the small localStorage save quota is not consumed. */
@@ -132,8 +133,25 @@ function render(s){
  }).join('')||'<p class="tl-empty">まだ投稿がありません。カレンダーの「投稿する」から書いてみよう。</p>')+'</div></div>';
  hydrateImages(root);
 }
+function lockEditorScreen(){
+ if(editorBodyStyle!==null)return;
+ editorScrollY=window.scrollY||document.documentElement.scrollTop||0;
+ editorBodyStyle={position:document.body.style.position,top:document.body.style.top,left:document.body.style.left,right:document.body.style.right,width:document.body.style.width,overflow:document.body.style.overflow};
+ Object.assign(document.body.style,{position:'fixed',top:'-'+editorScrollY+'px',left:'0',right:'0',width:'100%',overflow:'hidden'});
+ document.documentElement.classList.add('tl-editor-is-open');
+}
+function unlockEditorScreen(){
+ if(editorBodyStyle===null)return;
+ Object.assign(document.body.style,editorBodyStyle);editorBodyStyle=null;
+ document.documentElement.classList.remove('tl-editor-is-open');
+ window.scrollTo(0,editorScrollY);
+}
+function closeEditor(){
+ modal?.remove();modal=null;editing=null;pendingImages=0;unlockEditorScreen();
+}
 function openEditor(post){
- if(modal)modal.remove();
+ if(modal)closeEditor();
+ lockEditorScreen();
  editing=post?.id||null;pendingImages=0;lastRange=null;
  activeImages=[...(post?.images||[])].filter(x=>typeof x==='string'&&(inlinePhoto.test(x)||imageRef.test(x)));
  modal=document.createElement('div');modal.className='tl-modal';modal.innerHTML='<div class="tl-editor" role="dialog" aria-modal="true" aria-label="タイムライン投稿の編集"><header><strong>'+(post?'投稿を編集':'新しい投稿')+'</strong><button type="button" data-tl-close aria-label="閉じる">×</button></header><form id="tl-post-form"><div class="tl-editor-meta"><label>投稿日<input name="date" type="date" required value="'+E(post?.date||chosen)+'"></label><label>公開予定時刻<input name="time" type="time" required value="'+E(post?.time||nowJST().slice(11,16))+'"></label></div>'+
@@ -174,9 +192,9 @@ function openEditor(post){
   }else{area.appendChild(text);lastRange=null;}
   area.dispatchEvent(new Event('input',{bubbles:true}));
  });
- modal.querySelector('#tl-upload').addEventListener('change',e=>loadFiles([...e.target.files]));
+ modal.querySelector('#tl-upload').addEventListener('change',e=>{const files=[...(e.target.files||[])];e.target.value='';loadFiles(files)});
  modal.addEventListener('click',e=>{
-  if(e.target===modal||e.target.closest('[data-tl-close]')){modal.remove();modal=null;return;}
+  if(e.target===modal||e.target.closest('[data-tl-close]')){closeEditor();return;}
   const remove=e.target.closest('[data-tl-image-remove]');
   if(remove){activeImages.splice(Number(remove.dataset.tlImageRemove),1);preview();return;}
   if(e.target.closest('[data-tl-remove]')&&editing){
@@ -200,26 +218,39 @@ function openEditor(post){
  });
 }
 function saveAndClose(revert){
- try{api.save();modal?.remove();modal=null;editing=null;activeImages=[];api.toast('タイムラインを保存しました')}catch(e){console.error('投稿保存エラー:',e);revert?.();api.toast(e?.name==='QuotaExceededError'?'ブラウザの記録容量がいっぱいです。バックアップを取ってください':'保存できません。もう一度お試しください')}
+ try{api.save();closeEditor();activeImages=[];api.toast('タイムラインを保存しました')}catch(e){console.error('投稿保存エラー:',e);revert?.();api.toast(e?.name==='QuotaExceededError'?'ブラウザの記録容量がいっぱいです。バックアップを取ってください':'保存できません。もう一度お試しください')}
 }
 function preview(){
  const target=modal.querySelector('#tl-image-preview');
  target.innerHTML=activeImages.map((src,i)=>'<div>'+photoMarkup(src)+'<button type="button" data-tl-image-remove="'+i+'">×</button></div>').join('');hydrateImages(target);
 }
 function loadFiles(files){
- const valid=files.filter(f=>f.type.startsWith('image/')).slice(0,Math.max(0,4-activeImages.length));
- for(const f of valid){
-  if(f.size>10*1024*1024){api.toast('10MB以下の画像を選んでください');continue}
+ const valid=files.filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name||'')).slice(0,Math.max(0,4-activeImages.length));
+ if(!valid.length&&files.length)api.toast('画像ファイルを選んでください');
+ for(const file of valid){
+  if(file.size>20*1024*1024){api.toast('20MB以下の画像を選んでください');continue;}
   pendingImages++;
-  const reader=new FileReader();
-  reader.onload=()=>{
-   const image=new Image();image.onload=()=>{
-    const scale=Math.min(1,850/Math.max(image.width,image.height));
-    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
-    canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
-    if(activeImages.length<4){activeImages.push(canvas.toDataURL('image/jpeg',0.67));preview();}pendingImages--;
-   };image.onerror=()=>{pendingImages--;api.toast('画像を読み込めません')};image.src=reader.result;
-  };reader.onerror=()=>{pendingImages--;api.toast('画像を読み込めません')};reader.readAsDataURL(f);
+  let url;
+  try{url=URL.createObjectURL(file)}catch(error){pendingImages--;api.toast('画像を開けませんでした');continue}
+  const picture=new Image();let finished=false;
+  const done=()=>{if(finished)return false;finished=true;pendingImages--;URL.revokeObjectURL(url);return true};
+  picture.onload=()=>{
+   if(finished)return;
+   try{
+    const scale=Math.min(1,1000/Math.max(picture.naturalWidth||picture.width,picture.naturalHeight||picture.height));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(picture.width*scale));
+    canvas.height=Math.max(1,Math.round(picture.height*scale));
+    const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
+    ctx.drawImage(picture,0,0,canvas.width,canvas.height);
+    const data=canvas.toDataURL('image/jpeg',0.7);
+    if(!inlinePhoto.test(data))throw Error('Encoding failed');
+    if(activeImages.length<4){activeImages.push(data);preview();api.toast('写真を追加しました');}
+   }catch(err){console.warn('画像取り込み失敗:',err);api.toast('写真を読み込めません。別のJPEG・PNG画像で試してください')}
+   finally{done()}
+  };
+  picture.onerror=()=>{if(done())api.toast('画像形式を読み込めません。JPEG・PNGで試してください')};
+  picture.src=url;
  }
 }
 function openImageLightbox(src){
